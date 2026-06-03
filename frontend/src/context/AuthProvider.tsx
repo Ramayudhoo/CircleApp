@@ -1,40 +1,49 @@
-import { useState } from "react";
-import { AuthContext } from "./AuthContext";
-import axiosInstance from "../lib/axios";
+import { useState, ReactNode } from "react";
+import { useDispatch } from "react-redux";
+import AuthContext, { AuthUser } from "./AuthContext";
+import { setUser, clearUser } from "../store/authSlice";
+import api from "../lib/axios";
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<{ name: string; email: string } | null>(null);
-  const [token, setToken] = useState<string | null>(
-    localStorage.getItem("token")
-  );
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
+  const [user, setUserState] = useState<AuthUser | null>(() => {
+    const stored = localStorage.getItem("user");
+    return stored ? JSON.parse(stored) : null;
+  });
 
-  const login = async (email: string, password: string): Promise<boolean> => {
-    try {
-      const { data } = await axiosInstance.post("/auth/login", {
-        email,
-        password,
-      });
+  const dispatch = useDispatch();
 
-      localStorage.setItem("token", data.token);
-      setToken(data.token);
-      setUser({ name: "Admin", email });
-      return true;
-    } catch {
-      return false;
-    }
+  const register = async (
+    username: string,
+    name: string,
+    email: string,
+    password: string,
+  ) => {
+    const res = await api.post("/auth/register", {
+      username,
+      name,
+      email,
+      password,
+    });
+    const data: AuthUser = res.data.data;
+    setUserState(data);
+    dispatch(setUser(data));
+  };
+
+  const login = async (identifier: string, password: string) => {
+    const res = await api.post("/auth/login", { identifier, password });
+    const data: AuthUser = res.data.data;
+    setUserState(data);
+    dispatch(setUser(data));
   };
 
   const logout = () => {
-    localStorage.removeItem("token");
-    setToken(null);
-    setUser(null);
+    setUserState(null);
+    dispatch(clearUser());
   };
 
   return (
-    <AuthContext.Provider
-      value={{ user, token, login, logout, isAuthenticated: !!token }}
-    >
+    <AuthContext.Provider value={{ user, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );
-}
+};

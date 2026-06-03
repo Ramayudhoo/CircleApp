@@ -1,0 +1,67 @@
+
+```
+CircleApp
+├─ frontend
+│  ├─ README.md
+│  ├─ components.json
+│  ├─ eslint.config.js
+│  ├─ index.html
+│  ├─ package-lock.json
+│  ├─ package.json
+│  ├─ public
+│  │  ├─ favicon.svg
+│  │  └─ icons.svg
+│  ├─ src
+│  │  ├─ App.css
+│  │  ├─ App.tsx
+│  │  ├─ assets
+│  │  │  ├─ hero.png
+│  │  │  ├─ react.svg
+│  │  │  └─ vite.svg
+│  │  ├─ components
+│  │  │  ├─ mode-togle.tsx
+│  │  │  ├─ theme-provider.tsx
+│  │  │  └─ ui
+│  │  │     ├─ button.tsx
+│  │  │     ├─ card.tsx
+│  │  │     ├─ dropdown-menu.tsx
+│  │  │     └─ input.tsx
+│  │  ├─ context
+│  │  │  ├─ AuthContext.tsx
+│  │  │  └─ AuthProvider.tsx
+│  │  ├─ hooks
+│  │  │  └─ useAuth.ts
+│  │  ├─ index.css
+│  │  ├─ lib
+│  │  │  ├─ axios.ts
+│  │  │  └─ utils.ts
+│  │  ├─ main.tsx
+│  │  ├─ pages
+│  │  │  ├─ Home.tsx
+│  │  │  ├─ Login.tsx
+│  │  │  └─ Register.tsx
+│  │  └─ routes
+│  │     └─ index.tsx
+│  ├─ tsconfig.app.json
+│  ├─ tsconfig.json
+│  ├─ tsconfig.node.json
+│  └─ vite.config.ts
+└─ server
+   ├─ .env
+   ├─ index.ts
+   ├─ lib
+   │  └─ prisma.ts
+   ├─ package-lock.json
+   ├─ package.json
+   ├─ prisma
+   │  ├─ migrations
+   │  │  ├─ 20260602051839_init
+   │  │  │  └─ migration.sql
+   │  │  ├─ 20260602062831_fixing
+   │  │  │  └─ migration.sql
+   │  │  └─ migration_lock.toml
+   │  └─ schema.prisma
+   ├─ prisma.config.ts
+   └─ tsconfig.json
+
+```

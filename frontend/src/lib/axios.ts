@@ -1,21 +1,15 @@
-import axios from "axios";
+import axios from 'axios'
 
-const API_URL = "http://localhost:3000";
-const API_KEY = "my-secret-key";
+const api = axios.create({
+  baseURL: 'http://localhost:3000/api/v1',
+})
 
-const axiosInstance = axios.create({
-  baseURL: API_URL,
-  headers: {
-    "x-api-key": API_KEY,
-  },
-});
-
-axiosInstance.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token')
   if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+    config.headers.Authorization = `Bearer ${token}`
   }
-  return config;
-});
+  return config
+})
 
-export default axiosInstance;
+export default api
