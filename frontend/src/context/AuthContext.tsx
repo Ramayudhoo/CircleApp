@@ -12,6 +12,7 @@ export interface AuthUser {
 interface AuthContextType {
   user: AuthUser | null;
   login: (identifier: string, password: string) => Promise<void>;
+
   register: (
     username: string,
     name: string,

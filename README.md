@@ -1,7 +1,9 @@
 
 ```
 CircleApp
+├─ README.md
 ├─ frontend
+│  ├─ .prettierrc
 │  ├─ README.md
 │  ├─ components.json
 │  ├─ eslint.config.js
@@ -19,6 +21,10 @@ CircleApp
 │  │  │  ├─ react.svg
 │  │  │  └─ vite.svg
 │  │  ├─ components
+│  │  │  ├─ cards
+│  │  │  │  └─ PostCard.tsx
+│  │  │  ├─ layout
+│  │  │  │  └─ SideBar.tsx
 │  │  │  ├─ mode-togle.tsx
 │  │  │  ├─ theme-provider.tsx
 │  │  │  └─ ui
@@ -37,20 +43,21 @@ CircleApp
 │  │  │  └─ utils.ts
 │  │  ├─ main.tsx
 │  │  ├─ pages
+│  │  │  ├─ ForgotPass.tsx
 │  │  │  ├─ Home.tsx
 │  │  │  ├─ Login.tsx
 │  │  │  └─ Register.tsx
-│  │  └─ routes
-│  │     └─ index.tsx
+│  │  ├─ routes
+│  │  │  └─ index.tsx
+│  │  └─ store
+│  │     ├─ authSlice.ts
+│  │     └─ index.ts
 │  ├─ tsconfig.app.json
 │  ├─ tsconfig.json
 │  ├─ tsconfig.node.json
 │  └─ vite.config.ts
 └─ server
    ├─ .env
-   ├─ index.ts
-   ├─ lib
-   │  └─ prisma.ts
    ├─ package-lock.json
    ├─ package.json
    ├─ prisma
@@ -62,6 +69,16 @@ CircleApp
    │  │  └─ migration_lock.toml
    │  └─ schema.prisma
    ├─ prisma.config.ts
+   ├─ src
+   │  ├─ controllers
+   │  │  └─ auth.controller.ts
+   │  ├─ index.ts
+   │  ├─ lib
+   │  │  └─ prisma.ts
+   │  ├─ middleware
+   │  │  └─ auth.middleware.ts
+   │  └─ routes
+   │     └─ auth.route.ts
    └─ tsconfig.json
 
 ```
