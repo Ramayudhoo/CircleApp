@@ -1,7 +1,5 @@
 import { useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Heart, MessageCircle } from "lucide-react";
+import { Heart, MessageCircle, Repeat2, Send } from "lucide-react";
 import api from "../../lib/axios";
 
 interface PostCardProps {
@@ -17,7 +15,7 @@ interface PostCardProps {
 }
 
 export default function PostCard({
-  id, // ✅ tambah id
+  id,
   username,
   name,
   avatar,
@@ -46,50 +44,68 @@ export default function PostCard({
   };
 
   return (
-    <Card className="bg-zinc-900 border-zinc-800">
-      <CardContent className="p-4 space-y-3">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-green-600 flex items-center justify-center text-white font-bold shrink-0">
+    <div className="px-4 py-3 border-b border-zinc-800 hover:bg-zinc-900/30 transition-colors">
+      <div className="flex gap-3">
+        {/* Avatar + garis vertikal */}
+        <div className="flex flex-col items-center">
+          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-green-400 to-green-700 flex items-center justify-center text-white text-sm font-bold shrink-0 overflow-hidden">
             {avatar ? (
-              <img
-                src={avatar}
-                className="w-full h-full rounded-full object-cover"
-              />
+              <img src={avatar} className="w-full h-full object-cover" />
             ) : (
               name.charAt(0).toUpperCase()
             )}
           </div>
-          <div>
-            <p className="font-semibold text-sm text-white">{name}</p>
-            <p className="text-xs text-zinc-500">
-              @{username} · {createdAt}
-            </p>
+          {/* garis vertikal penghubung */}
+          <div className="w-0.5 flex-1 bg-zinc-800 mt-2 mb-1 min-h-4" />
+        </div>
+
+        {/* Konten */}
+        <div className="flex-1 pb-3">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center gap-2">
+              <span className="font-semibold text-sm text-white">{name}</span>
+              <span className="text-xs text-zinc-500">@{username}</span>
+            </div>
+            <span className="text-xs text-zinc-600">{createdAt}</span>
+          </div>
+
+          {/* Teks konten */}
+          <p className="text-sm text-zinc-200 leading-relaxed mb-3">
+            {content}
+          </p>
+
+          {/* Action buttons */}
+          <div className="flex items-center gap-1 -ml-2">
+            {/* Like */}
+            <button
+              onClick={handleLike}
+              className={`flex items-center gap-1.5 px-2 py-1.5 rounded-full text-xs transition-colors hover:bg-red-500/10 ${
+                isLiked ? "text-red-500" : "text-zinc-500 hover:text-red-500"
+              }`}
+            >
+              <Heart size={15} className={isLiked ? "fill-red-500" : ""} />
+              <span>{likeCount}</span>
+            </button>
+
+            {/* Reply */}
+            <button className="flex items-center gap-1.5 px-2 py-1.5 rounded-full text-xs text-zinc-500 hover:text-blue-400 hover:bg-blue-500/10 transition-colors">
+              <MessageCircle size={15} />
+              <span>{replies}</span>
+            </button>
+
+            {/* Repost */}
+            <button className="flex items-center gap-1.5 px-2 py-1.5 rounded-full text-xs text-zinc-500 hover:text-green-400 hover:bg-green-500/10 transition-colors">
+              <Repeat2 size={15} />
+            </button>
+
+            {/* Share */}
+            <button className="flex items-center gap-1.5 px-2 py-1.5 rounded-full text-xs text-zinc-500 hover:text-zinc-300 hover:bg-zinc-700/50 transition-colors">
+              <Send size={15} />
+            </button>
           </div>
         </div>
-
-        <p className="text-sm text-zinc-200">{content}</p>
-
-        <div className="flex gap-4 pt-1">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleLike}
-            className={`gap-1 px-2 hover:text-red-500 ${isLiked ? "text-red-500" : "text-zinc-500"}`}
-          >
-            <Heart size={16} className={isLiked ? "fill-red-500" : ""} />
-            <span className="text-xs">{likeCount}</span>
-          </Button>
-
-          <Button
-            variant="ghost"
-            size="sm"
-            className="gap-1 px-2 text-zinc-500 hover:text-green-500"
-          >
-            <MessageCircle size={16} />
-            <span className="text-xs">{replies}</span>
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

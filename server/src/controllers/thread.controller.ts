@@ -70,11 +70,15 @@ export const createThread = async (req: AuthRequest, res: Response) => {
         message: "Content thread tidak boleh kosong",
       });
     }
+    const imageUrl = req.file
+      ? `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`
+      : null;
 
     const Thread = await prisma.threads.create({
       data: {
         content,
         created_by: userId!,
+        image: imageUrl,
       },
       include: {
         user: {
