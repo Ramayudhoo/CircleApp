@@ -175,3 +175,128 @@ export const toggleLike = async (req: AuthRequest, res: Response) => {
     });
   }
 };
+
+// ============== GET THREAD DETAIL=============
+export const getThreadDetail = async (req: AuthRequest, res: Response) => {
+  try {
+    const threadId = parseInt(req.params["id"] as string);
+    const currentUserId = req.user?.user_id;
+
+    if (isNaN(threadId)) {
+      return res.status(400).json({
+        code: 400,
+        status: "error",
+        message: "Thread ID tidak valid",
+      });
+    }
+
+    const thread = await prisma.threads.findUnique({
+      where: { id: threadId },
+      include: {
+        user: {
+          select: {
+            id: true,
+            username: true,
+            full_name: true,
+            photo_profile: true,
+          },
+        },
+        likes: true,
+        replies: true,
+      },
+    });
+
+    if (!thread) {
+      return res.status(404).json({
+        code: 404,
+        status: "error",
+        message: "Thread tidak ditemukan",
+      });
+    }
+
+    return res.status(200).json({
+      code: 200,
+      status: "success",
+      message: "Get Data Thread Successfully",
+      data: {
+        id: thread.id,
+        content: thread.content,
+        image: thread.image,
+        created_at: thread.created_at,
+        user: {
+          id: thread.user.id,
+          username: thread.user.username,
+          name: thread.user.full_name,
+          profile_picture: thread.user.photo_profile,
+        },
+        likes: thread.likes.length,
+        replies: thread.replies.length,
+        isLiked: thread.likes.some((like) => like.user_id === currentUserId),
+      },
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      code: 500,
+      status: "error",
+      message: "Gagal ambil detail thread",
+    });
+  }
+};
+// ============== GET REPLIES =============
+
+export const getReplies = async (req: AuthRequest, res: Response) => {
+  try {
+    const threadId = parseInt(req.query["thread_id"] as string);
+
+    if (isNaN(threadId)) {
+      return res.status(400).json({
+        code: 400,
+        status: "error",
+        message: "thread_id tidak valid",
+      });
+    }
+
+    const replies = await prisma.replies.findMany({
+      where: { thread_id: threadId },
+      orderBy: { created_at: "asc" },
+      include: {
+        user: {
+          select: {
+            id: true,
+            username: true,
+            full_name: true,
+            photo_profile: true,
+          },
+        },
+      },
+    });
+
+    const data = replies.map((reply) => ({
+      id: reply.id,
+      content: reply.content,
+      image: reply.image,
+      created_at: reply.created_at,
+      user: {
+        id: reply.user.id,
+        username: reply.user.username,
+        name: reply.user.full_name,
+        profile_picture: reply.user.photo_profile,
+      },
+    }));
+
+    return res.status(200).json({
+      code: 200,
+      status: "success",
+      message: "Get Data Replies Successfully",
+      data: { replies: data },
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      code: 500,
+      status: "error",
+      message: "Gagal ambil replies",
+    });
+  }
+};

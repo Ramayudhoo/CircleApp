@@ -3,7 +3,10 @@ import { useSelector } from "react-redux";
 import { RootState } from "../store";
 import PostCard from "../components/cards/PostCard";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { ModeToggle } from "@/components/mode-togle";
 import { AppSidebar } from "@/components/layout/SideBar";
+import ProfileCard from "@/components/cards/ProfileCard";
+import SuggestCard from "@/components/cards/SuggestCard";
 import api from "../lib/axios";
 
 interface Thread {
@@ -77,61 +80,80 @@ export default function Home() {
     }
   };
 
-  return (
-    <SidebarProvider>
-      {/* ✅ AppSidebar di luar div utama */}
-      <AppSidebar onNewThread={() => {}} />
+return (
+  <SidebarProvider>
+    <AppSidebar onNewThread={() => {}} />
 
-      {/* ✅ SidebarInset otomatis atur margin */}
-      <main className="flex-1 max-w-2xl border-r border-zinc-800/50 bg-[#0a0a0a] text-white">
-        {/* Header */}
-        <div className="sticky top-0 z-10 bg-[#0a0a0a]/80 backdrop-blur border-b border-zinc-800/50 px-4 py-4 flex items-center gap-3">
-          <SidebarTrigger className="text-zinc-500 hover:text-white" />
+    {/*  App Sidebar */}
+    <main className="w-full min-h-screen bg-background text-foreground">
+      {/* Header */}
+      <div className="sticky top-0 z-10 bg-background/80 backdrop-blur border-b border-border px-4 py-4 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <SidebarTrigger className="text-muted-foreground hover:text-foreground" />
           <h2 className="text-base font-semibold">For You</h2>
         </div>
-
-        {/* Compose */}
-        <div className="px-4 py-4 border-b border-zinc-800/50">
-          <div className="flex gap-3">
-            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-green-400 to-green-700 flex items-center justify-center text-sm font-bold shrink-0">
-              {user?.name?.charAt(0).toUpperCase()}
-            </div>
-            <div className="flex-1">
-              <textarea
-                placeholder="What's new?"
-                className="w-full bg-transparent text-sm text-zinc-200 placeholder:text-zinc-600 resize-none outline-none min-h-[60px]"
-                value={newThread}
-                onChange={(e) => setNewThread(e.target.value)}
-                rows={2}
-              />
-              <div className="flex justify-end mt-2">
-                <button
-                  onClick={handlePostThread}
-                  disabled={newThread.trim() === ""}
-                  className="px-4 py-1.5 rounded-full text-sm font-semibold bg-white text-black disabled:opacity-30 disabled:cursor-not-allowed hover:bg-zinc-200 transition-colors"
-                >
-                  Post
-                </button>
+        <ModeToggle />
+      </div>
+      <div className="flex gap-8 max-w-9xl ml-6 lg:ml-12 px-4 py-6">
+        {/* Feed kiri */}
+        <div className="flex-1 min-w-0">
+          {/* Compose */}
+          <div className="px-4 py-4 border-b border-border">
+            <div className="flex gap-3">
+              <div className="w-9 h-9 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-sm font-bold shrink-0">
+                {user?.name?.charAt(0).toUpperCase()}
+              </div>
+              <div className="flex-1">
+                <textarea
+                  placeholder="What's new?"
+                  className="w-full bg-transparent text-sm text-foreground placeholder:text-muted-foreground resize-none outline-none min-h-[60px]"
+                  value={newThread}
+                  onChange={(e) => setNewThread(e.target.value)}
+                  rows={2}
+                />
+                <div className="flex justify-end mt-2">
+                  <button
+                    onClick={handlePostThread}
+                    disabled={newThread.trim() === ""}
+                    className="px-4 py-1.5 rounded-full text-sm font-semibold bg-primary text-primary-foreground disabled:opacity-30 disabled:cursor-not-allowed hover:opacity-90 transition-opacity"
+                  >
+                    Post
+                  </button>
+                </div>
               </div>
             </div>
           </div>
+
+          {/* Thread list */}
+          {loading ? (
+            <div className="flex justify-center py-12">
+              <div className="w-6 h-6 rounded-full border-2 border-muted border-t-primary animate-spin" />
+            </div>
+          ) : error ? (
+            <p className="text-destructive text-sm text-center py-8">{error}</p>
+          ) : threads.length === 0 ? (
+            <p className="text-muted-foreground text-sm text-center py-12">Belum ada thread</p>
+          ) : (
+            threads.map((thread) => <PostCard key={thread.id} {...thread} />)
+          )}
+
         </div>
 
-        {/* Thread list */}
-        {loading ? (
-          <div className="flex justify-center py-12">
-            <div className="w-6 h-6 rounded-full border-2 border-zinc-700 border-t-green-500 animate-spin" />
-          </div>
-        ) : error ? (
-          <p className="text-red-500 text-sm text-center py-8">{error}</p>
-        ) : threads.length === 0 ? (
-          <p className="text-zinc-600 text-sm text-center py-12">
-            Belum ada thread
-          </p>
-        ) : (
-          threads.map((thread) => <PostCard key={thread.id} {...thread} />)
-        )}
-      </main>
-    </SidebarProvider>
-  );
+        {/*Sidebar kanan — Profile dan suggest */}
+        <aside className="w-80 shrink-0 space-y-4 hidden lg:block">
+          <ProfileCard
+            name={user?.name ?? ""}
+            username={user?.username ?? ""}
+            bio={user?.bio ?? ""}
+            avatar={user?.photo_profile ?? ""}
+            followers={0}
+            following={0}
+          />
+          <SuggestCard />
+        </aside>
+
+      </div>
+    </main>
+  </SidebarProvider>
+)
 }

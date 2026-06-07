@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store";
 import { useAuth } from "../../hooks/useAuth";
@@ -42,11 +42,13 @@ export function AppSidebar({ onNewThread }: AppSidebarProps) {
   return (
     <Sidebar collapsible="icon">
       {/* Header — Logo */}
-      <SidebarHeader className="px-4 py-5 flex items-center justify-center">
+      <SidebarHeader className="px-4 py-5 group-data-[collapsible=icon]:p-2 flex items-center justify-center">
+       <Link to="/home">
         <h1 className="text-2xl font-black tracking-tight group-data-[collapsible=icon]:hidden transition-all duration-300">
-          Circ<span className="text-green-500">le</span>
+          Dev<span className="text-primary">Com</span>
         </h1>
-        <div className="w-9 h-9 rounded-full bg-green-500 hidden group-data-[collapsible=icon]:flex items-center justify-center transition-all duration-300" />
+       </Link>
+        <div className="w-9 h-9 rounded-full bg-primary hidden group-data-[collapsible=icon]:flex text-primary-foreground items-center justify-center font-bold transition-all duration-300">D</div>
       </SidebarHeader>
 
       {/* Nav items */}
@@ -62,9 +64,7 @@ export function AppSidebar({ onNewThread }: AppSidebarProps) {
                     className="
                       flex items-center justify-start
                       group-data-[collapsible=icon]:justify-center
-                      gap-3 py-6 px-3
-                      text-zinc-400 hover:text-white
-                      hover:bg-zinc-800/60
+                      gap-3 py-6 px-3 text-muted-foreground hover:text-foreground hover:bg-accent/60
                       transition-all duration-200
                       rounded-xl
                     "
@@ -88,12 +88,12 @@ export function AppSidebar({ onNewThread }: AppSidebarProps) {
       {/* Footer — user + logout */}
       <SidebarFooter className="px-3 py-4 space-y-2">
         <div className="flex items-center gap-3 px-2 group-data-[collapsible=icon]:justify-center">
-          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-green-400 to-green-700 flex items-center justify-center text-sm font-bold shrink-0">
+          <div className="w-9 h-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold shrink-0">
             {user?.name?.charAt(0).toUpperCase()}
           </div>
           <div className="group-data-[collapsible=icon]:hidden transition-all duration-300">
             <p className="text-xs font-semibold leading-tight">{user?.name}</p>
-            <p className="text-xs text-zinc-500">@{user?.username}</p>
+            <p className="text-xs text-muted-foreground">@{user?.username}</p>
           </div>
         </div>
 
@@ -106,9 +106,7 @@ export function AppSidebar({ onNewThread }: AppSidebarProps) {
           className="
             flex items-center justify-start
             group-data-[collapsible=icon]:justify-center
-            gap-3 py-6 px-3
-            text-zinc-500 hover:text-red-400
-            hover:bg-red-500/10
+            gap-3 py-6 px-3text-muted-foreground hover:text-destructive hover:bg-destructive/10
             transition-all duration-200
             rounded-xl
           "

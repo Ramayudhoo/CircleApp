@@ -5,6 +5,7 @@ interface AuthUser {
   username: string;
   name: string;
   email: string;
+  bio?: string;
   photo_profile?: string;
   token: string;
 }
