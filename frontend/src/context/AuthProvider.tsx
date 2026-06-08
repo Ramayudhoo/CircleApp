@@ -6,7 +6,7 @@ import api from "../lib/axios";
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUserState] = useState<AuthUser | null>(() => {
-    const stored = localStorage.getItem("user");
+    const stored = sessionStorage.getItem("user");
     return stored ? JSON.parse(stored) : null;
   });
 
@@ -34,11 +34,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const data: AuthUser = res.data.data;
     setUserState(data);
     dispatch(setUser(data));
+    sessionStorage.setItem("user", JSON.stringify(data));
+    sessionStorage.setItem("token", data.token);
   };
 
   const logout = () => {
     setUserState(null);
     dispatch(clearUser());
+    sessionStorage.removeItem("user");
+    sessionStorage.removeItem("token");
   };
 
   return (

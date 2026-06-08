@@ -1,6 +1,8 @@
 import { Response } from "express";
 import { AuthRequest } from "../middleware/auth.middleware";
 import prisma from "../lib/prisma";
+import { io } from "../index";
+import { timeStamp } from "node:console";
 
 // ============ GET THREADS ============
 export const getThreads = async (req: AuthRequest, res: Response) => {
@@ -91,27 +93,30 @@ export const createThread = async (req: AuthRequest, res: Response) => {
         },
       },
     });
+    const responseData = {
+      id: Thread.id,
+      content: Thread.content,
+      image: Thread.image,
+      created_at: Thread.created_at,
+      user: {
+        id: Thread.user.id,
+        username: Thread.user.username,
+        name: Thread.user.full_name,
+        profile_picture: Thread.user.photo_profile,
+      },
+      likes: 0,
+      reply: 0,
+      isLiked: false,
+    };
+
+    io.emit("new_thread", responseData);
 
     return res.status(201).json({
       code: 201,
       status: "success",
       message: "Thread created successfully",
       data: {
-        thread: {
-          id: Thread.id,
-          content: Thread.content,
-          image: Thread.image,
-          created_at: Thread.created_at,
-          user: {
-            id: Thread.user.id,
-            username: Thread.user.username,
-            name: Thread.user.full_name,
-            profile_picture: Thread.user.photo_profile,
-          },
-          likes: 0,
-          reply: 0,
-          isLiked: false,
-        },
+        thread: responseData,
       },
     });
   } catch (error) {
@@ -283,6 +288,129 @@ export const getReplies = async (req: AuthRequest, res: Response) => {
         name: reply.user.full_name,
         profile_picture: reply.user.photo_profile,
       },
+    }));
+
+    return res.status(200).json({
+      code: 200,
+      status: "success",
+      message: "Get Data Replies Successfully",
+      data: { replies: data },
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      code: 500,
+      status: "error",
+      message: "Gagal ambil replies",
+    });
+  }
+};
+
+// ============== CREATE REPLIES =============
+
+export const CreateReplies = async (req: AuthRequest, res: Response) => {
+  try {
+    const { content, thread_id } = req.body;
+    const userId = req.user?.user_id;
+
+    if (!content || !thread_id) {
+      return res.status(400).json({
+        code: 400,
+        status: "error",
+        message: "Content dan Thread wajib diisi",
+      });
+    }
+
+    const reply = await prisma.replies.create({
+      data: {
+        user_id: userId!,
+        thread_id: Number(thread_id),
+        content,
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            username: true,
+            full_name: true,
+            photo_profile: true,
+          },
+        },
+      },
+    });
+
+    return res.status(201).json({
+      code: 201,
+      status: "success",
+      message: "Reply berhasil dibuat",
+      data: {
+        reply: {
+          id: reply.id,
+          content: reply.content,
+          image: reply.image,
+          created_at: reply.created_at,
+          user: {
+            id: reply.user.id,
+            username: reply.user.username,
+            name: reply.user.full_name,
+            profile_picture: reply.user.photo_profile,
+          },
+        },
+      },
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      code: 500,
+      status: "error",
+      message: "Gagal membuat reply",
+    });
+  }
+};
+
+// ============== GET THREAD REPLIES (pseudocode) =============
+export const getThreadReplies = async (req: AuthRequest, res: Response) => {
+  try {
+    const threadId = parseInt(req.params["id"] as string);
+    const limit = parseInt(req.query.limit as string) || 25;
+
+    if (isNaN(threadId)) {
+      return res.status(400).json({
+        code: 400,
+        status: "error",
+        message: "Thread ID tidak valid",
+      });
+    }
+
+    const replies = await prisma.replies.findMany({
+      where: { thread_id: threadId },
+      take: limit,
+      orderBy: { created_at: "asc" },
+      include: {
+        user: {
+          select: {
+            id: true,
+            username: true,
+            full_name: true,
+            photo_profile: true,
+          },
+        },
+        likes: true,
+      },
+    });
+
+    const data = replies.map((reply) => ({
+      id: reply.id,
+      content: reply.content,
+      image: reply.image,
+      created_at: reply.created_at,
+      user: {
+        id: reply.user.id,
+        username: reply.user.username,
+        name: reply.user.full_name,
+        profile_picture: reply.user.photo_profile,
+      },
+      likes: reply.likes.length,
     }));
 
     return res.status(200).json({

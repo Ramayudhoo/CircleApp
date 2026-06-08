@@ -63,16 +63,19 @@ model replies {
 
   user   users   @relation(fields: [user_id], references: [id])
   thread threads @relation(fields: [thread_id], references: [id])
+  likes likes[]
 }
 
 model likes {
   id         Int      @id @default(autoincrement())
   user_id    Int
   thread_id  Int
+  reply_id Int?
   created_at DateTime @default(now())
 
   user   users   @relation(fields: [user_id], references: [id])
   thread threads @relation(fields: [thread_id], references: [id])
+  reply replies? @relation(fields: [reply_id], references: [id])
 
   @@unique([user_id, thread_id])
 }
