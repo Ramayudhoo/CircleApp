@@ -62,20 +62,21 @@ model replies {
   updated_at DateTime @updatedAt
 
   user   users   @relation(fields: [user_id], references: [id])
-  thread threads @relation(fields: [thread_id], references: [id])
+  thread threads @relation(fields: [thread_id], references: [id], onDelete: Cascade)
   likes likes[]
 }
 
 model likes {
   id         Int      @id @default(autoincrement())
   user_id    Int
-  thread_id  Int
+  thread_id  Int?
   reply_id Int?
   created_at DateTime @default(now())
 
   user   users   @relation(fields: [user_id], references: [id])
-  thread threads @relation(fields: [thread_id], references: [id])
-  reply replies? @relation(fields: [reply_id], references: [id])
+  thread threads? @relation(fields: [thread_id], references: [id], onDelete: Cascade)
+  reply replies? @relation(fields: [reply_id], references: [id], onDelete: Cascade)
 
   @@unique([user_id, thread_id])
+  @@unique([user_id,reply_id])
 }

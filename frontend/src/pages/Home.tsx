@@ -1,121 +1,40 @@
-import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "../store";
-import socket from "@/lib/socket";
 import PostCard from "../components/cards/PostCard";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { ModeToggle } from "@/components/mode-togle";
 import { AppSidebar } from "@/components/layout/SideBar";
 import ProfileCard from "@/components/cards/ProfileCard";
 import SuggestCard from "@/components/cards/SuggestCard";
-import api from "../lib/axios";
-
-interface Thread {
-  id: number;
-  username: string;
-  name: string;
-  avatar?: string;
-  image?: string;
-  content: string;
-  createdAt: string;
-  likes: number;
-  replies: number;
-  isLiked: boolean;
-}
+import { useThreads } from "@/hooks/useThreads";
+import { useCreateThread } from "@/hooks/useCreateThreads";
 
 export default function Home() {
   const user = useSelector((state: RootState) => state.auth.user);
-
-  const [threads, setThreads] = useState<Thread[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [newThread, setNewThread] = useState("");
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imageReview, setImageReview] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchThreads = async () => {
-      try {
-        const res = await api.get("/threads?limit=25");
-        const raw = res.data.data.threads;
-        console.log("raw[0]:", raw[0]);
-        const mapped: Thread[] = raw.map((t: any) => ({
-          id: t.id,
-          username: t.user.username,
-          name: t.user.name,
-          avatar: t.user.profile_picture,
-          image: t.image,
-          content: t.content,
-          createdAt: new Date(t.created_at).toLocaleDateString("id-ID"),
-          likes: t.likes,
-          replies: t.reply,
-          isLiked: t.isLiked,
-        }));
-        setThreads(mapped);
-      } catch (err) {
-        setError("Gagal memuat thread");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchThreads();
-  }, []);
-  useEffect(() => {
-    socket.on("new_thread", (thread: any) => {
-      const mapped: Thread = {
-        id: thread.id,
-        username: thread.user.username,
-        name: thread.user.name,
-        avatar: thread.user.profile_picture,
-        content: thread.content,
-        createdAt: new Date(thread.created_at).toLocaleDateString("id-ID"),
-        likes: thread.likes,
-        replies: thread.reply,
-        isLiked: thread.isLiked,
-      };
-      setThreads((prev) => [mapped, ...prev]);
-    });
-
-    return () => {
-      socket.off("new_thread");
-    };
-  }, []);
-
-  const handlePostThread = async () => {
-    if (newThread.trim() === "") return;
-    try {
-      const formData = new FormData();
-      formData.append("content", newThread);
-      if (imageFile) {
-        formData.append("image", imageFile);
-      }
-
-      // ✅ cukup satu post pakai formData
-      await api.post("/threads", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-
-      setNewThread("");
-      setImageFile(null);
-      setImageReview(null);
-    } catch (error) {
-      console.error("Error posting thread:", error);
-    }
-  };
+  const profile = useSelector((state: RootState) => state.profile);
+  const { threads, loading, error } = useThreads(user?.username);
+  const {
+    content: newThread,
+    setContent: setNewThread,
+    imageFile,
+    setImageFile,
+    imagePreview,
+    setImagePreview,
+    loading: posting,
+    handlePost,
+  } = useCreateThread();
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setImageFile(file);
-      setImageReview(URL.createObjectURL(file));
+      setImagePreview(URL.createObjectURL(file));
     }
   };
 
   return (
     <SidebarProvider>
       <AppSidebar onNewThread={() => {}} />
-
-      {/*  App Sidebar */}
       <main className="w-full min-h-screen bg-background text-foreground">
         {/* Header */}
         <div className="sticky top-0 z-10 bg-background/80 backdrop-blur border-b border-border px-4 py-4 flex items-center justify-between">
@@ -131,8 +50,16 @@ export default function Home() {
             {/* Compose */}
             <div className="px-4 py-4 border-b border-border">
               <div className="flex gap-3">
-                <div className="w-9 h-9 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-sm font-bold shrink-0">
-                  {user?.name?.charAt(0).toUpperCase()}
+                <div className="w-9 h-9 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-sm font-bold shrink-0 overflow-hidden">
+                  {profile.avatar ? (
+                    <img
+                      src={profile.avatar}
+                      alt={profile.name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    profile.name?.charAt(0).toUpperCase()
+                  )}
                 </div>
                 <div className="flex-1">
                   <textarea
@@ -142,18 +69,16 @@ export default function Home() {
                     onChange={(e) => setNewThread(e.target.value)}
                     rows={2}
                   />
-
-                  {/* Preview image */}
-                  {imageReview && (
+                  {imagePreview && (
                     <div className="relative mt-2 inline-block">
                       <img
-                        src={imageReview}
+                        src={imagePreview}
                         className="max-h-48 rounded-xl object-cover border border-border"
                       />
                       <button
                         onClick={() => {
                           setImageFile(null);
-                          setImageReview(null);
+                          setImagePreview(null);
                         }}
                         className="absolute top-1 right-1 w-6 h-6 rounded-full bg-black/60 text-white flex items-center justify-center text-xs hover:bg-black/80"
                       >
@@ -161,9 +86,7 @@ export default function Home() {
                       </button>
                     </div>
                   )}
-
                   <div className="flex items-center justify-between mt-2">
-                    {/* Tombol upload image */}
                     <label className="cursor-pointer text-muted-foreground hover:text-primary transition-colors">
                       <input
                         type="file"
@@ -171,36 +94,14 @@ export default function Home() {
                         className="hidden"
                         onChange={handleImageChange}
                       />
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="18"
-                        height="18"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <rect
-                          width="18"
-                          height="18"
-                          x="3"
-                          y="3"
-                          rx="2"
-                          ry="2"
-                        />
-                        <circle cx="9" cy="9" r="2" />
-                        <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
-                      </svg>
+                      {/* icon svg */}
                     </label>
-
                     <button
-                      onClick={handlePostThread}
-                      disabled={newThread.trim() === ""}
+                      onClick={handlePost}
+                      disabled={!newThread.trim() || posting}
                       className="px-4 py-1.5 rounded-full text-sm font-semibold bg-primary text-primary-foreground disabled:opacity-30 disabled:cursor-not-allowed hover:opacity-90 transition-opacity"
                     >
-                      Post
+                      {posting ? "Posting..." : "Post"}
                     </button>
                   </div>
                 </div>
@@ -225,16 +126,9 @@ export default function Home() {
             )}
           </div>
 
-          {/*Sidebar kanan — Profile dan suggest */}
+          {/* Sidebar kanan */}
           <aside className="w-80 shrink-0 space-y-4 hidden lg:block">
-            <ProfileCard
-              name={user?.name ?? ""}
-              username={user?.username ?? ""}
-              bio={user?.bio ?? ""}
-              avatar={user?.photo_profile ?? ""}
-              followers={0}
-              following={0}
-            />
+            <ProfileCard onEditProfile={() => {}} />
             <SuggestCard />
           </aside>
         </div>

@@ -29,7 +29,7 @@ export default function Login() {
       <div className="w-full max-w-sm space-y-8">
         <div className="text-center space-y-1">
           <h1 className="text-4xl font-black tracking-tight text-foreground">
-            Circ<span className="text-primary">le</span>
+            Dev<span className="text-primary">Com</span>
           </h1>
           <p className="text-muted-foreground text-sm">Say something.</p>
         </div>
@@ -72,7 +72,10 @@ export default function Login() {
 
         <p className="text-center text-sm text-muted-foreground">
           Don't have an account?{" "}
-          <a href="/register" className="text-foreground font-semibold hover:text-primary transition-colors">
+          <a
+            href="/register"
+            className="text-foreground font-semibold hover:text-primary transition-colors"
+          >
             Sign up
           </a>
         </p>

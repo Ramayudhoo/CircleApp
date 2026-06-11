@@ -3,6 +3,7 @@ import { AuthRequest } from "../middleware/auth.middleware";
 import prisma from "../lib/prisma";
 import { io } from "../index";
 import { timeStamp } from "node:console";
+import { threadId } from "node:worker_threads";
 
 // ============ GET THREADS ============
 export const getThreads = async (req: AuthRequest, res: Response) => {
@@ -129,7 +130,7 @@ export const createThread = async (req: AuthRequest, res: Response) => {
   }
 };
 
-// ============ TOGGLE LIKE ============
+// ============ TOGGLE LIKE THREADS ============
 export const toggleLike = async (req: AuthRequest, res: Response) => {
   try {
     const threadId = parseInt(req.params["id"] as string);
@@ -163,6 +164,58 @@ export const toggleLike = async (req: AuthRequest, res: Response) => {
         data: {
           user_id: userId!,
           thread_id: threadId,
+          reply_id: null,
+        },
+      });
+      return res.status(200).json({
+        code: 200,
+        status: "success",
+        message: "Thread liked",
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      code: 500,
+      status: "error",
+      message: "Gagal toggle like thread",
+    });
+  }
+};
+// ============ TOGGLE LIKE REPLIES ============
+export const toggleReplyLike = async (req: AuthRequest, res: Response) => {
+  try {
+    const replyId = parseInt(req.params["id"] as string);
+    const userId = req.user?.user_id;
+
+    const existingLike = await prisma.likes.findUnique({
+      where: {
+        user_id_reply_id: {
+          user_id: userId!,
+          reply_id: replyId,
+        },
+      },
+    });
+
+    if (existingLike) {
+      await prisma.likes.delete({
+        where: {
+          user_id_reply_id: {
+            user_id: userId!,
+            reply_id: replyId,
+          },
+        },
+      });
+      return res.status(200).json({
+        code: 200,
+        status: "success",
+        message: "Thread unliked",
+      });
+    } else {
+      await prisma.likes.create({
+        data: {
+          user_id: userId!,
+          reply_id: replyId,
         },
       });
       return res.status(200).json({
@@ -181,7 +234,7 @@ export const toggleLike = async (req: AuthRequest, res: Response) => {
   }
 };
 
-// ============== GET THREAD DETAIL=============
+// ============== GET THREAD DETAIL =============
 export const getThreadDetail = async (req: AuthRequest, res: Response) => {
   try {
     const threadId = parseInt(req.params["id"] as string);
@@ -274,6 +327,7 @@ export const getReplies = async (req: AuthRequest, res: Response) => {
             photo_profile: true,
           },
         },
+        likes: true,
       },
     });
 
@@ -282,6 +336,8 @@ export const getReplies = async (req: AuthRequest, res: Response) => {
       content: reply.content,
       image: reply.image,
       created_at: reply.created_at,
+      likes: reply.likes.length,
+      isLiked: reply.likes.some((like) => like.user_id === req.user?.user_id),
       user: {
         id: reply.user.id,
         username: reply.user.username,
@@ -310,10 +366,15 @@ export const getReplies = async (req: AuthRequest, res: Response) => {
 
 export const CreateReplies = async (req: AuthRequest, res: Response) => {
   try {
-    const { content, thread_id } = req.body;
+    const { content } = req.body;
+    const threadId = parseInt(req.query.thread_id as string);
     const userId = req.user?.user_id;
 
-    if (!content || !thread_id) {
+    const imageUrl = req.file
+      ? `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`
+      : null;
+
+    if (!content || isNaN(threadId)) {
       return res.status(400).json({
         code: 400,
         status: "error",
@@ -324,8 +385,9 @@ export const CreateReplies = async (req: AuthRequest, res: Response) => {
     const reply = await prisma.replies.create({
       data: {
         user_id: userId!,
-        thread_id: Number(thread_id),
+        thread_id: Number(threadId),
         content,
+        image: imageUrl,
       },
       include: {
         user: {
@@ -368,7 +430,7 @@ export const CreateReplies = async (req: AuthRequest, res: Response) => {
   }
 };
 
-// ============== GET THREAD REPLIES (pseudocode) =============
+// ============== GET THREAD REPLIES =============
 export const getThreadReplies = async (req: AuthRequest, res: Response) => {
   try {
     const threadId = parseInt(req.params["id"] as string);
@@ -404,13 +466,14 @@ export const getThreadReplies = async (req: AuthRequest, res: Response) => {
       content: reply.content,
       image: reply.image,
       created_at: reply.created_at,
+      likes: reply.likes.length,
+      isLiked: reply.likes.some((like) => like.user_id === req.user?.user_id),
       user: {
         id: reply.user.id,
         username: reply.user.username,
         name: reply.user.full_name,
         profile_picture: reply.user.photo_profile,
       },
-      likes: reply.likes.length,
     }));
 
     return res.status(200).json({

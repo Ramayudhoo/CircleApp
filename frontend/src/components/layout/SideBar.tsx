@@ -29,7 +29,7 @@ interface AppSidebarProps {
 export function AppSidebar({ onNewThread }: AppSidebarProps) {
   const { logout } = useAuth();
   const navigate = useNavigate();
-  const user = useSelector((state: RootState) => state.auth.user);
+  const profile = useSelector((state: RootState) => state.profile);
 
   const navItems = [
     { icon: HomeIcon, label: "Home", action: () => navigate("/home") },
@@ -43,12 +43,14 @@ export function AppSidebar({ onNewThread }: AppSidebarProps) {
     <Sidebar collapsible="icon">
       {/* Header — Logo */}
       <SidebarHeader className="px-4 py-5 group-data-[collapsible=icon]:p-2 flex items-center justify-center">
-       <Link to="/home">
-        <h1 className="text-2xl font-black tracking-tight group-data-[collapsible=icon]:hidden transition-all duration-300">
-          Dev<span className="text-primary">Com</span>
-        </h1>
-       </Link>
-        <div className="w-9 h-9 rounded-full bg-primary hidden group-data-[collapsible=icon]:flex text-primary-foreground items-center justify-center font-bold transition-all duration-300">D</div>
+        <Link to="/home">
+          <h1 className="text-2xl font-black tracking-tight group-data-[collapsible=icon]:hidden transition-all duration-300">
+            Dev<span className="text-primary">Com</span>
+          </h1>
+        </Link>
+        <div className="w-9 h-9 rounded-full bg-primary hidden group-data-[collapsible=icon]:flex text-primary-foreground items-center justify-center font-bold transition-all duration-300">
+          D
+        </div>
       </SidebarHeader>
 
       {/* Nav items */}
@@ -88,12 +90,22 @@ export function AppSidebar({ onNewThread }: AppSidebarProps) {
       {/* Footer — user + logout */}
       <SidebarFooter className="px-3 py-4 space-y-2">
         <div className="flex items-center gap-3 px-2 group-data-[collapsible=icon]:justify-center">
-          <div className="w-9 h-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold shrink-0">
-            {user?.name?.charAt(0).toUpperCase()}
+          <div className="w-9 h-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold shrink-0 overflow-hidden">
+            {profile.avatar ? (
+              <img
+                src={profile.avatar}
+                alt={profile.name}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              profile.name?.charAt(0).toUpperCase()
+            )}
           </div>
           <div className="group-data-[collapsible=icon]:hidden transition-all duration-300">
-            <p className="text-xs font-semibold leading-tight">{user?.name}</p>
-            <p className="text-xs text-muted-foreground">@{user?.username}</p>
+            <p className="text-xs font-semibold leading-tight">
+              {profile.name}
+            </p>
+            <p className="text-xs text-muted-foreground">@{profile.username}</p>
           </div>
         </div>
 

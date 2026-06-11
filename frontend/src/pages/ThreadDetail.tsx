@@ -1,101 +1,57 @@
-import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Heart, MessageCircle } from "lucide-react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/SideBar";
 import { ModeToggle } from "@/components/mode-togle";
-import api from "../lib/axios";
-
-interface Thread {
-  id: number;
-  content: string;
-  image?: string;
-  created_at: string;
-  user: {
-    id: number;
-    username: string;
-    name: string;
-    profile_picture?: string;
-  };
-  likes: number;
-  replies: number;
-  isLiked: boolean;
-}
-
-interface Reply {
-  id: number;
-  content: string;
-  created_at: string;
-  user: {
-    id: number;
-    username: string;
-    name: string;
-    profile_picture?: string;
-  };
-  likes: number;
-}
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { useThreadDetail } from "@/hooks/useThreadDetail";
+import { useCreateReply } from "@/hooks/useCreateReply";
+import { useState } from "react";
 
 export default function ThreadDetail() {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const threadId = Number(id);
 
-  const [thread, setThread] = useState<Thread | null>(null);
-  const [replies, setReplies] = useState<Reply[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [isLiked, setIsLiked] = useState(false);
-  const [likeCount, setLikeCount] = useState(0);
-  const [replyContent, setreplyContent] = useState("");
+  const {
+    thread,
+    replies,
+    loading,
+    error,
+    isLiked,
+    likeCount,
+    handleLikeThread,
+    handleLikeReply,
+    addReply,
+  } = useThreadDetail(threadId);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        // fetch thread detail
-        const threadRes = await api.get(`/threads/${id}`);
-        const t = threadRes.data.data;
-        setThread(t);
-        setIsLiked(t.isLiked);
-        setLikeCount(t.likes);
+  const {
+    content: replyContent,
+    setContent: setReplyContent,
+    imagePreview: replyImagePreview,
+    loading: replyLoading,
+    handleImageChange: handleReplyImageChange,
+    resetForm: resetReplyForm,
+    submitReply,
+    imageFile,
+    setImageFile,
+    setImagePreview: setReplyImagePreview,
+  } = useCreateReply(threadId);
 
-        // fetch replies
-        const repliesRes = await api.get(`/threads/${id}/replies?limit=25`);
-        setReplies(repliesRes.data.data.replies);
-      } catch (err) {
-        setError("Gagal memuat thread");
-        console.log(err);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const [replyOpen, setReplyOpen] = useState(false);
 
-    fetchData();
-  }, [id]);
-
-  const handleLike = async () => {
-    try {
-      await api.post(`/threads/${id}/like`);
-      if (isLiked) {
-        setIsLiked(false);
-        setLikeCount((prev) => prev - 1);
-      } else {
-        setIsLiked(true);
-        setLikeCount((prev) => prev + 1);
-      }
-    } catch (err) {
-      console.log(err);
-    }
-  };
-  const handleReplies = async () => {
-    if (!replyContent.trim()) return;
-    try {
-      const res = await api.post(`/reply`, {
-        thread_id: id,
-        content: replyContent,
-      });
-      setReplies((prev) => [...prev, res.data.data]);
-      setreplyContent("");
-    } catch (error) {
-      console.log(error);
+  const handleReply = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const newReply = await submitReply();
+    if (newReply) {
+      addReply(newReply);
+      setReplyOpen(false);
     }
   };
 
@@ -174,7 +130,7 @@ export default function ThreadDetail() {
                   </span>
                   <span>
                     <strong className="text-foreground">
-                      {thread.replies}
+                      {replies.length}
                     </strong>{" "}
                     <span className="text-muted-foreground">Replies</span>
                   </span>
@@ -183,7 +139,7 @@ export default function ThreadDetail() {
                 {/* Actions */}
                 <div className="flex gap-2 pt-2 -ml-2">
                   <button
-                    onClick={handleLike}
+                    onClick={handleLikeThread}
                     className={`flex items-center gap-1.5 px-2 py-1.5 rounded-full text-xs transition-colors hover:bg-destructive/10 ${
                       isLiked
                         ? "text-red-500"
@@ -196,14 +152,138 @@ export default function ThreadDetail() {
                     />
                     <span>Like</span>
                   </button>
-                  <button className="flex items-center gap-1.5 px-2 py-1.5 rounded-full text-xs text-muted-foreground hover:text-secondary hover:bg-secondary/10 transition-colors">
-                    <MessageCircle size={16} />
-                    <span>Reply</span>
-                  </button>
+
+                  {/* Reply Dialog */}
+                  <Dialog open={replyOpen} onOpenChange={setReplyOpen}>
+                    <DialogTrigger
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setReplyOpen(true);
+                      }}
+                      className="flex items-center gap-1.5 px-2 py-1.5 rounded-full text-xs text-muted-foreground hover:text-secondary hover:bg-secondary/10 transition-colors"
+                    >
+                      <MessageCircle size={15} />
+                      <span>{replies.length} Replies</span>
+                    </DialogTrigger>
+
+                    <DialogContent
+                      className="sm:max-w-md"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <DialogHeader>
+                        <DialogTitle className="text-base">
+                          Reply to @{thread.user.username}
+                        </DialogTitle>
+                      </DialogHeader>
+
+                      {/* Preview thread */}
+                      <div className="flex gap-3 p-3 rounded-xl bg-muted/40 border border-border">
+                        <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-xs font-bold shrink-0 overflow-hidden">
+                          {thread.user.profile_picture ? (
+                            <img
+                              src={thread.user.profile_picture}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            thread.user.name.charAt(0).toUpperCase()
+                          )}
+                        </div>
+                        <div>
+                          <p className="text-xs font-semibold text-foreground">
+                            {thread.user.name}
+                          </p>
+                          <p className="text-xs text-muted-foreground line-clamp-2">
+                            {thread.content}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Input reply */}
+                      <div className="space-y-3">
+                        <textarea
+                          value={replyContent}
+                          onChange={(e) => setReplyContent(e.target.value)}
+                          placeholder={`Reply to @${thread.user.username}...`}
+                          className="w-full min-h-25 bg-muted/30 border border-border rounded-xl p-3 text-sm text-foreground placeholder:text-muted-foreground resize-none outline-none focus:border-primary transition-colors"
+                        />
+                        {replyImagePreview && (
+                          <div className="relative inline-block">
+                            <img
+                              src={replyImagePreview}
+                              className="max-h-40 rounded-xl border object-cover"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setImageFile(null);
+                                setReplyImagePreview(null);
+                              }}
+                              className="absolute top-2 right-2 w-6 h-6 rounded-full bg-black/60 text-white"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        )}
+
+                        <div className="flex items-center justify-between">
+                          <label className="cursor-pointer text-muted-foreground hover:text-primary transition-colors">
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={handleReplyImageChange}
+                            />
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="18"
+                              height="18"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            >
+                              <rect
+                                width="18"
+                                height="18"
+                                x="3"
+                                y="3"
+                                rx="2"
+                                ry="2"
+                              />
+                              <circle cx="9" cy="9" r="2" />
+                              <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
+                            </svg>
+                          </label>
+
+                          <div className="flex gap-2">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setReplyOpen(false);
+                                resetReplyForm();
+                              }}
+                              className="px-4 py-1.5 rounded-full text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                            >
+                              Batal
+                            </button>
+                            <button
+                              onClick={handleReply}
+                              disabled={!replyContent.trim() || replyLoading}
+                              className="px-4 py-1.5 rounded-full text-sm font-semibold bg-primary text-primary-foreground disabled:opacity-30 disabled:cursor-not-allowed hover:opacity-90 transition-opacity"
+                            >
+                              {replyLoading ? "Posting..." : "Reply"}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
                 </div>
               </div>
 
-              {/* Replies */}
+              {/* Replies List */}
               <div>
                 {replies.length === 0 ? (
                   <p className="text-muted-foreground text-sm text-center py-8">
@@ -243,14 +323,29 @@ export default function ThreadDetail() {
                           <p className="text-sm text-foreground leading-relaxed">
                             {reply.content}
                           </p>
-                          <div className="flex items-center gap-1 mt-2">
-                            <Heart
-                              size={14}
-                              className="text-muted-foreground"
+                          {reply.image && (
+                            <img
+                              src={reply.image}
+                              alt="reply image"
+                              className="w-full max-h-72 object-cover rounded-xl border border-border mb-3"
+                              onClick={(e) => e.stopPropagation()}
                             />
-                            <span className="text-xs text-muted-foreground">
-                              {reply.likes}
-                            </span>
+                          )}
+                          <div className="flex items-center gap-1 mt-2">
+                            <button
+                              onClick={() => handleLikeReply(reply.id)}
+                              className={`flex items-center gap-1.5 px-2 py-1.5 rounded-full text-xs transition-colors hover:bg-destructive/10 ${
+                                reply.isLiked
+                                  ? "text-red-500"
+                                  : "text-muted-foreground hover:text-red-500"
+                              }`}
+                            >
+                              <Heart
+                                size={15}
+                                className={reply.isLiked ? "fill-red-500" : ""}
+                              />
+                              <span>{reply.likes}</span>
+                            </button>
                           </div>
                         </div>
                       </div>

@@ -1,7 +1,8 @@
-import { useState, ReactNode } from "react";
+import { useState, ReactNode, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import AuthContext, { AuthUser } from "./AuthContext";
 import { setUser, clearUser } from "../store/authSlice";
+import { setProfile } from "../store/profileSlice";
 import api from "../lib/axios";
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
@@ -11,6 +12,39 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   });
 
   const dispatch = useDispatch();
+
+  // Helper: fetch profile dan dispatch ke Redux
+  const fetchAndSetProfile = async () => {
+    try {
+      const res = await api.get("/user/profile");
+      const data = res.data.data;
+      dispatch(
+        setProfile({
+          id: data.id,
+          username: data.username,
+          name: data.name,
+          email: data.email,
+          bio: data.bio || "",
+          avatar: data.avatar || "",
+          follower_count: data.follower_count || 0,
+          following_count: data.following_count || 0,
+        }),
+      );
+    } catch (err) {
+      console.error("Failed to fetch profile:", err);
+      throw err;
+    }
+  };
+
+  // Saat mount: restore user dari sessionStorage + fetch profile
+  useEffect(() => {
+    const stored = sessionStorage.getItem("user");
+    if (stored) {
+      const parsedUser: AuthUser = JSON.parse(stored);
+      dispatch(setUser(parsedUser));
+      fetchAndSetProfile(); // ← fetch profile saat refresh
+    }
+  }, [dispatch]);
 
   const register = async (
     username: string,
@@ -27,6 +61,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const data: AuthUser = res.data.data;
     setUserState(data);
     dispatch(setUser(data));
+    sessionStorage.setItem("user", JSON.stringify(data));
+    sessionStorage.setItem("token", data.token);
+
+    // Fetch profile setelah register
+    await fetchAndSetProfile();
   };
 
   const login = async (identifier: string, password: string) => {
@@ -36,6 +75,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     dispatch(setUser(data));
     sessionStorage.setItem("user", JSON.stringify(data));
     sessionStorage.setItem("token", data.token);
+
+    // ✅ FETCH PROFILE SETELAH LOGIN
+    await fetchAndSetProfile();
   };
 
   const logout = () => {
