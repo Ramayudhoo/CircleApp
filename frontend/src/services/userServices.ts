@@ -1,4 +1,6 @@
 import api from "@/lib/axios";
+import type { SuggestedUser } from "@/types/suggest";
+import type { SearchUser } from "@/types/user";
 
 // Get profile user yang sedang login
 export const getProfile = async () => {
@@ -24,4 +26,16 @@ export const updateProfile = async (formData: FormData) => {
 export const getUserProfile = async (userId: number) => {
   const res = await api.get(`/user/${userId}`);
   return res.data.data;
+};
+
+export const searchUsers = async (query: string): Promise<SearchUser[]> => {
+  const res = await api.get(`/user/search?q=${encodeURIComponent(query)}`);
+  return res.data.data.users;
+};
+
+export const getSuggestedUsers = async (
+  limit: number = 5,
+): Promise<SuggestedUser[]> => {
+  const res = await api.get(`/user/suggestions?limit=${limit}`);
+  return res.data.data.users;
 };

@@ -39,7 +39,6 @@ export default function ThreadDetail() {
     handleImageChange: handleReplyImageChange,
     resetForm: resetReplyForm,
     submitReply,
-    imageFile,
     setImageFile,
     setImagePreview: setReplyImagePreview,
   } = useCreateReply(threadId);
@@ -59,96 +58,105 @@ export default function ThreadDetail() {
     <SidebarProvider>
       <AppSidebar onNewThread={() => {}} />
 
-      <main className="w-full min-h-screen bg-background text-foreground">
+      <main className="w-full min-h-screen bg-gradient-to-b from-background via-background/95 to-background/90 text-foreground relative overflow-hidden">
+        {/* Decorative subtle background glowing shapes */}
+        <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] bg-primary/5 rounded-full blur-[120px] pointer-events-none" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] bg-secondary/5 rounded-full blur-[140px] pointer-events-none" />
+
         {/* Header */}
-        <div className="sticky top-0 z-10 bg-background/80 backdrop-blur border-b border-border px-4 py-4 flex items-center justify-between">
+        <div className="sticky top-0 z-20 bg-background/70 backdrop-blur-md border-b border-border/40 px-6 py-4 flex items-center justify-between transition-all duration-300">
           <div className="flex items-center gap-3">
-            <SidebarTrigger className="text-muted-foreground hover:text-foreground" />
+            <SidebarTrigger className="text-muted-foreground hover:text-foreground transition-colors hover:scale-105 duration-200" />
             <button
               onClick={() => navigate(-1)}
-              className="text-muted-foreground hover:text-foreground transition-colors"
+              className="text-muted-foreground hover:text-foreground transition-all duration-200 p-1.5 hover:bg-muted/40 rounded-full"
             >
-              <ArrowLeft size={20} />
+              <ArrowLeft size={18} />
             </button>
-            <h2 className="text-base font-semibold">Thread</h2>
+            <div className="h-4 w-[1px] bg-border/60 mx-1" />
+            <h2 className="text-lg font-bold tracking-tight">Thread</h2>
           </div>
           <ModeToggle />
         </div>
 
-        <div className="max-w-2xl ml-6 lg:ml-12 px-4">
+        <div className="max-w-2xl mx-auto px-4 py-6 relative z-10 space-y-6">
           {loading ? (
             <div className="flex justify-center py-12">
-              <div className="w-6 h-6 rounded-full border-2 border-muted border-t-primary animate-spin" />
+              <div className="w-7 h-7 rounded-full border-[3px] border-muted border-t-primary animate-spin" />
             </div>
           ) : error ? (
-            <p className="text-destructive text-sm text-center py-8">{error}</p>
+            <div className="p-4 rounded-xl border border-destructive/20 bg-destructive/10 text-destructive text-sm text-center">
+              {error}
+            </div>
           ) : thread ? (
             <>
               {/* Thread Detail Card */}
-              <div className="px-4 py-4 border-b border-border">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold overflow-hidden">
+              <div className="p-5 border border-border/30 bg-card/25 backdrop-blur-md rounded-2xl shadow-xl shadow-black/5 hover:border-primary/20 transition-all duration-300">
+                <div className="flex items-center gap-3.5 mb-4">
+                  <div className="w-11 h-11 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-primary-foreground font-bold overflow-hidden ring-2 ring-background/60 shadow-sm">
                     {thread.user.profile_picture ? (
                       <img
                         src={thread.user.profile_picture}
                         className="w-full h-full object-cover"
+                        alt={thread.user.name}
                       />
                     ) : (
                       thread.user.name.charAt(0).toUpperCase()
                     )}
                   </div>
                   <div>
-                    <p className="font-semibold text-sm text-foreground">
+                    <p className="font-bold text-sm text-foreground leading-tight hover:text-primary transition-colors cursor-pointer">
                       {thread.user.name}
                     </p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-muted-foreground/90">
                       @{thread.user.username}
                     </p>
                   </div>
                 </div>
 
-                <p className="text-foreground text-base leading-relaxed mb-3">
+                <p className="text-foreground/90 text-[15px] leading-relaxed mb-4 break-words">
                   {thread.content}
                 </p>
 
                 {thread.image && (
-                  <img
-                    src={thread.image}
-                    className="rounded-xl w-full object-cover max-h-80 mb-3"
-                  />
+                  <div className="overflow-hidden rounded-xl border border-border/40 shadow-sm max-h-80 w-full mb-4 bg-muted/20">
+                    <img
+                      src={thread.image}
+                      className="w-full h-full object-cover hover:scale-[1.01] transition-transform duration-500"
+                      alt="thread content"
+                    />
+                  </div>
                 )}
 
-                <p className="text-xs text-muted-foreground mb-3">
-                  {new Date(thread.created_at).toLocaleString("id-ID")}
+                <p className="text-xs text-muted-foreground/75 font-medium mb-4">
+                  {new Date(thread.created_at).toLocaleString("id-ID", { dateStyle: "long", timeStyle: "short" })}
                 </p>
 
                 {/* Stats */}
-                <div className="flex gap-4 py-3 border-y border-border text-sm">
-                  <span>
+                <div className="flex gap-5 py-3 border-y border-border/35 text-xs font-semibold">
+                  <span className="flex items-center gap-1">
                     <strong className="text-foreground">{likeCount}</strong>{" "}
-                    <span className="text-muted-foreground">Likes</span>
+                    <span className="text-muted-foreground/80">Likes</span>
                   </span>
-                  <span>
-                    <strong className="text-foreground">
-                      {replies.length}
-                    </strong>{" "}
-                    <span className="text-muted-foreground">Replies</span>
+                  <span className="flex items-center gap-1">
+                    <strong className="text-foreground">{replies.length}</strong>{" "}
+                    <span className="text-muted-foreground/80">Replies</span>
                   </span>
                 </div>
 
                 {/* Actions */}
-                <div className="flex gap-2 pt-2 -ml-2">
+                <div className="flex gap-3 pt-3 -ml-2">
                   <button
                     onClick={handleLikeThread}
-                    className={`flex items-center gap-1.5 px-2 py-1.5 rounded-full text-xs transition-colors hover:bg-destructive/10 ${
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 hover:bg-destructive/10 ${
                       isLiked
-                        ? "text-red-500"
+                        ? "text-red-500 scale-[1.03]"
                         : "text-muted-foreground hover:text-red-500"
                     }`}
                   >
                     <Heart
                       size={16}
-                      className={isLiked ? "fill-red-500" : ""}
+                      className={`transition-transform duration-200 active:scale-125 ${isLiked ? "fill-red-500 text-red-500 animate-pulse" : ""}`}
                     />
                     <span>Like</span>
                   </button>
@@ -160,39 +168,41 @@ export default function ThreadDetail() {
                         e.stopPropagation();
                         setReplyOpen(true);
                       }}
-                      className="flex items-center gap-1.5 px-2 py-1.5 rounded-full text-xs text-muted-foreground hover:text-secondary hover:bg-secondary/10 transition-colors"
+                      className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold text-muted-foreground hover:text-secondary hover:bg-secondary/10 transition-all duration-200 cursor-pointer"
                     >
                       <MessageCircle size={15} />
-                      <span>{replies.length} Replies</span>
+                      <span>Reply</span>
                     </DialogTrigger>
 
                     <DialogContent
-                      className="sm:max-w-md"
+                      className="sm:max-w-md border border-border/40 bg-card/95 backdrop-blur-md shadow-2xl"
                       onClick={(e) => e.stopPropagation()}
                     >
                       <DialogHeader>
-                        <DialogTitle className="text-base">
-                          Reply to @{thread.user.username}
+                        <DialogTitle className="text-base font-bold flex items-center gap-2">
+                          <span>Reply to</span>
+                          <span className="text-primary">@{thread.user.username}</span>
                         </DialogTitle>
                       </DialogHeader>
 
                       {/* Preview thread */}
-                      <div className="flex gap-3 p-3 rounded-xl bg-muted/40 border border-border">
-                        <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-xs font-bold shrink-0 overflow-hidden">
+                      <div className="flex gap-3 p-3.5 rounded-xl bg-muted/40 border border-border/30 shadow-inner">
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-primary-foreground text-xs font-bold shrink-0 overflow-hidden shadow-sm">
                           {thread.user.profile_picture ? (
                             <img
                               src={thread.user.profile_picture}
                               className="w-full h-full object-cover"
+                              alt="profile avatar"
                             />
                           ) : (
                             thread.user.name.charAt(0).toUpperCase()
                           )}
                         </div>
-                        <div>
-                          <p className="text-xs font-semibold text-foreground">
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs font-bold text-foreground">
                             {thread.user.name}
                           </p>
-                          <p className="text-xs text-muted-foreground line-clamp-2">
+                          <p className="text-xs text-muted-foreground/90 line-clamp-2 mt-0.5 break-words">
                             {thread.content}
                           </p>
                         </div>
@@ -211,6 +221,7 @@ export default function ThreadDetail() {
                             <img
                               src={replyImagePreview}
                               className="max-h-40 rounded-xl border object-cover"
+                              alt="reply preview"
                             />
                             <button
                               type="button"
@@ -226,7 +237,7 @@ export default function ThreadDetail() {
                         )}
 
                         <div className="flex items-center justify-between">
-                          <label className="cursor-pointer text-muted-foreground hover:text-primary transition-colors">
+                          <label className="cursor-pointer text-muted-foreground hover:text-primary transition-colors p-2 hover:bg-primary/10 rounded-full">
                             <input
                               type="file"
                               accept="image/*"
@@ -264,14 +275,14 @@ export default function ThreadDetail() {
                                 setReplyOpen(false);
                                 resetReplyForm();
                               }}
-                              className="px-4 py-1.5 rounded-full text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                              className="px-4 py-1.5 rounded-full text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
                             >
                               Batal
                             </button>
                             <button
                               onClick={handleReply}
                               disabled={!replyContent.trim() || replyLoading}
-                              className="px-4 py-1.5 rounded-full text-sm font-semibold bg-primary text-primary-foreground disabled:opacity-30 disabled:cursor-not-allowed hover:opacity-90 transition-opacity"
+                              className="px-5 py-2 rounded-full text-xs font-bold bg-primary text-primary-foreground disabled:opacity-30 disabled:cursor-not-allowed hover:opacity-90 transition-opacity cursor-pointer"
                             >
                               {replyLoading ? "Posting..." : "Reply"}
                             </button>
@@ -284,73 +295,79 @@ export default function ThreadDetail() {
               </div>
 
               {/* Replies List */}
-              <div>
+              <div className="space-y-4">
+                <h3 className="font-bold text-xs uppercase tracking-wider text-muted-foreground/80 px-2">Replies</h3>
                 {replies.length === 0 ? (
-                  <p className="text-muted-foreground text-sm text-center py-8">
-                    Belum ada reply
-                  </p>
+                  <div className="text-center py-12 border border-dashed border-border/60 rounded-2xl bg-card/10">
+                    <p className="text-muted-foreground text-sm font-medium">
+                      Belum ada reply untuk thread ini
+                    </p>
+                  </div>
                 ) : (
-                  replies.map((reply) => (
-                    <div
-                      key={reply.id}
-                      className="px-4 py-3 border-b border-border hover:bg-muted/30 transition-colors"
-                    >
-                      <div className="flex gap-3">
-                        <div className="w-9 h-9 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-sm font-bold shrink-0 overflow-hidden">
-                          {reply.user.profile_picture ? (
-                            <img
-                              src={reply.user.profile_picture}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            reply.user.name.charAt(0).toUpperCase()
-                          )}
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="font-semibold text-sm text-foreground">
-                              {reply.user.name}
-                            </span>
-                            <span className="text-xs text-muted-foreground">
-                              @{reply.user.username}
-                            </span>
-                            <span className="text-xs text-muted-foreground ml-auto">
-                              {new Date(reply.created_at).toLocaleDateString(
-                                "id-ID",
-                              )}
-                            </span>
-                          </div>
-                          <p className="text-sm text-foreground leading-relaxed">
-                            {reply.content}
-                          </p>
-                          {reply.image && (
-                            <img
-                              src={reply.image}
-                              alt="reply image"
-                              className="w-full max-h-72 object-cover rounded-xl border border-border mb-3"
-                              onClick={(e) => e.stopPropagation()}
-                            />
-                          )}
-                          <div className="flex items-center gap-1 mt-2">
-                            <button
-                              onClick={() => handleLikeReply(reply.id)}
-                              className={`flex items-center gap-1.5 px-2 py-1.5 rounded-full text-xs transition-colors hover:bg-destructive/10 ${
-                                reply.isLiked
-                                  ? "text-red-500"
-                                  : "text-muted-foreground hover:text-red-500"
-                              }`}
-                            >
-                              <Heart
-                                size={15}
-                                className={reply.isLiked ? "fill-red-500" : ""}
+                  <div className="divide-y divide-border/30 rounded-2xl border border-border/30 overflow-hidden bg-card/20 backdrop-blur-sm shadow-sm">
+                    {replies.map((reply) => (
+                      <div
+                        key={reply.id}
+                        className="px-6 py-4 hover:bg-card/45 backdrop-blur-xs transition-all duration-300 border-b border-border/25"
+                      >
+                        <div className="flex gap-4">
+                          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-primary-foreground text-sm font-bold shrink-0 overflow-hidden ring-2 ring-background/60 shadow-sm">
+                            {reply.user.profile_picture ? (
+                              <img
+                                src={reply.user.profile_picture}
+                                className="w-full h-full object-cover"
+                                alt={reply.user.name}
                               />
-                              <span>{reply.likes}</span>
-                            </button>
+                            ) : (
+                              reply.user.name.charAt(0).toUpperCase()
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="font-bold text-sm text-foreground hover:text-primary transition-colors cursor-pointer truncate">
+                                {reply.user.name}
+                              </span>
+                              <span className="text-xs text-muted-foreground/80 truncate">
+                                @{reply.user.username}
+                              </span>
+                              <span className="text-xs text-muted-foreground/70 font-medium ml-auto shrink-0">
+                                {new Date(reply.created_at).toLocaleDateString("id-ID")}
+                              </span>
+                            </div>
+                            <p className="text-[13.5px] text-foreground/90 leading-relaxed mb-2.5 break-words">
+                              {reply.content}
+                            </p>
+                            {reply.image && (
+                              <div className="overflow-hidden rounded-xl border border-border/40 shadow-sm max-h-72 w-full mb-3 bg-muted/20">
+                                <img
+                                  src={reply.image}
+                                  alt="reply image"
+                                  className="w-full h-full object-cover hover:scale-[1.01] transition-transform duration-500"
+                                  onClick={(e) => e.stopPropagation()}
+                                />
+                              </div>
+                            )}
+                            <div className="flex items-center gap-1">
+                              <button
+                                onClick={() => handleLikeReply(reply.id)}
+                                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold transition-all duration-200 hover:bg-destructive/10 ${
+                                  reply.isLiked
+                                    ? "text-red-500"
+                                    : "text-muted-foreground hover:text-red-500"
+                                }`}
+                              >
+                                <Heart
+                                  size={14}
+                                  className={reply.isLiked ? "fill-red-500 text-red-500 animate-pulse" : ""}
+                                />
+                                <span>{reply.likes}</span>
+                              </button>
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  ))
+                    ))}
+                  </div>
                 )}
               </div>
             </>

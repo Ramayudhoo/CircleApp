@@ -225,3 +225,131 @@ export const getUserProfile = async (req: AuthRequest, res: Response) => {
     });
   }
 };
+export const searchUser = async (req: AuthRequest, res: Response) => {
+  try {
+    const query = req.query.q as string;
+    const currentUserId = req.user?.user_id;
+
+    if (!query || query.trim() === "") {
+      return res.status(400).json({
+        code: 400,
+        status: "error",
+        message: "Query pencarian tidak boleh kosong",
+      });
+    }
+
+    const users = await prisma.users.findMany({
+      where: {
+        OR: [
+          { username: { contains: query, mode: "insensitive" } },
+          { full_name: { contains: query, mode: "insensitive" } },
+        ],
+      },
+      select: {
+        id: true,
+        username: true,
+        full_name: true,
+        photo_profile: true,
+      },
+      take: 20, // batasi 20 hasil
+    });
+
+    // Cek follow status untuk tiap user
+    const usersWithStatus = await Promise.all(
+      users.map(async (user) => {
+        if (user.id === currentUserId) {
+          return { ...user, is_following: null }; // diri sendiri
+        }
+
+        const isFollowing = await prisma.following.findUnique({
+          where: {
+            follower_id_following_id: {
+              follower_id: currentUserId!,
+              following_id: user.id,
+            },
+          },
+        });
+
+        return {
+          id: user.id,
+          username: user.username,
+          name: user.full_name || user.username, // ← fallback ke username
+          avatar: user.photo_profile || "",
+          is_following: user.id === currentUserId ? null : !!isFollowing,
+        };
+      }),
+    );
+
+    return res.status(200).json({
+      code: 200,
+      status: "success",
+      message: "Search users successfully",
+      data: { users: usersWithStatus },
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      code: 500,
+      status: "error",
+      message: "Internal Server Error",
+    });
+  }
+};
+
+// Get suggested users (yang belum di-follow)
+export const getSuggestedUsers = async (req: AuthRequest, res: Response) => {
+  try {
+    const currentUserId = req.user?.user_id;
+
+    // Validasi: pastikan user_id ada
+    if (!currentUserId) {
+      return res.status(401).json({
+        code: 401,
+        status: "error",
+        message: "Unauthorized",
+      });
+    }
+
+    const limit = parseInt(req.query.limit as string) || 5;
+
+    const users = await prisma.users.findMany({
+      where: {
+        id: { not: currentUserId }, // ← sekarang pasti number
+        followers: {
+          none: { follower_id: currentUserId }, // ← pasti number
+        },
+      },
+      select: {
+        id: true,
+        username: true,
+        full_name: true,
+        photo_profile: true,
+        bio: true,
+      },
+      take: limit,
+      orderBy: { created_at: "desc" },
+    });
+
+    const mapped = users.map((user) => ({
+      id: user.id,
+      username: user.username,
+      name: user.full_name || user.username,
+      avatar: user.photo_profile || "",
+      bio: user.bio || "",
+    }));
+
+    return res.status(200).json({
+      code: 200,
+      status: "success",
+      message: "Get suggested users successfully",
+      data: { users: mapped },
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      code: 500,
+      status: "error",
+      message: "Internal Server Error",
+    });
+  }
+};

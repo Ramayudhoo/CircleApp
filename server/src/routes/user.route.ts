@@ -4,11 +4,17 @@ import {
   getProfile, // GET /user/profile (current user)
   getUserThreads, // GET /user/:id/threads
   updateProfile, // PATCH /user/profile
-  getUserProfile, // GET /user/:id (user lain)
+  getUserProfile,
+  searchUser,
+  getSuggestedUsers, // GET /user/:id (user lain)
 } from "../controllers/user.controller";
 import upload from "../lib/multer";
 
 const router = Router();
+
+router.get("/suggestions", authMiddleware, getSuggestedUsers);
+
+router.get("/search", authMiddleware, searchUser);
 
 // 1. Route untuk current user (SPESIFIK)
 router.get("/profile", authMiddleware, getProfile);

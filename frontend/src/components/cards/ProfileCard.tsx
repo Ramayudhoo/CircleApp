@@ -17,7 +17,7 @@ interface ProfileCardProps {
   onEditProfile?: () => void;
 }
 
-export default function ProfileCard({ onEditProfile }: ProfileCardProps) {
+export default function ProfileCard({ onEditProfile: _onEditProfile }: ProfileCardProps) {
   const profile = useSelector((state: RootState) => state.profile);
   const dispatch = useDispatch();
 
@@ -90,14 +90,16 @@ export default function ProfileCard({ onEditProfile }: ProfileCardProps) {
   };
 
   return (
-    <div className="rounded-2xl overflow-hidden border border-border bg-card">
+    <div className="rounded-2xl overflow-hidden border border-border/30 bg-card/45 backdrop-blur-md shadow-lg shadow-black/5 hover:border-primary/20 transition-all duration-300">
       {/* Cover */}
-      <div className="h-24 w-full bg-gradient-to-br from-primary/40 via-secondary/30 to-primary/20 relative" />
+      <div className="relative h-24 w-full bg-gradient-to-tr from-primary/50 via-purple-500/30 to-secondary/50 overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-white/10 via-transparent to-transparent opacity-40" />
+      </div>
 
       {/* Avatar + Edit Button */}
-      <div className="px-4 pb-4">
-        <div className="flex items-end justify-between -mt-8 mb-3">
-          <div className="w-16 h-16 rounded-full border-4 border-card bg-primary flex items-center justify-center text-primary-foreground text-xl font-bold overflow-hidden">
+      <div className="px-5 pb-5">
+        <div className="flex items-end justify-between -mt-9 mb-4">
+          <div className="w-18 h-18 rounded-full border-4 border-background bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-primary-foreground text-xl font-bold overflow-hidden z-10 relative shadow-md">
             {profile.avatar ? (
               <img
                 src={profile.avatar}
@@ -110,7 +112,7 @@ export default function ProfileCard({ onEditProfile }: ProfileCardProps) {
           </div>
 
           <Dialog open={editOpen} onOpenChange={setEditOpen}>
-            <DialogTrigger className="rounded-full border border-border text-foreground hover:bg-accent text-xs px-4 py-1.5">
+            <DialogTrigger className="rounded-full border border-border/60 text-foreground hover:bg-primary hover:text-primary-foreground hover:border-primary text-xs font-bold px-4.5 py-1.5 transition-all duration-200 shadow-xs cursor-pointer">
               Edit profile
             </DialogTrigger>
 

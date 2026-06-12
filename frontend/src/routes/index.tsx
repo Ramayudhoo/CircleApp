@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
 import Home from "../pages/Home";
+import Search from "@/pages/Search";
 import Profile from "../pages/Profile";
 import { useAuth } from "../hooks/useAuth";
 import ThreadDetail from "@/pages/ThreadDetail";
@@ -37,8 +38,16 @@ export default function Router() {
               <Profile></Profile>
             </ProtectedRoute>
           }
-        ></Route>
-        <Route path="/user/:id" element={<UserProfile></UserProfile>}></Route>
+        />
+        <Route
+          path="/search"
+          element={
+            <ProtectedRoute>
+              <Search></Search>
+            </ProtectedRoute>
+          }
+        />
+        <Route path="/user/:id" element={<UserProfile></UserProfile>} />
 
         <Route
           path="/thread/:id"

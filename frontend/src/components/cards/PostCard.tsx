@@ -120,14 +120,14 @@ export default function PostCard({
 
   return (
     <div
-      className="px-4 py-3 border-b border-border hover:bg-muted/30 transition-colors cursor-pointer"
+      className="px-6 py-5 hover:bg-card/40 backdrop-blur-xs transition-all duration-300 cursor-pointer relative group/post border-b border-border/30"
       onClick={() => navigate(`/thread/${id}`)}
     >
-      <div className="flex gap-3">
+      <div className="flex gap-4">
         {/* Avatar */}
         <div className="flex flex-col items-center">
           <Link to={`/user/${userId}`} onClick={(e) => e.stopPropagation()}>
-            <div className="w-9 h-9 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-sm font-bold shrink-0 overflow-hidden hover:opacity-80 transition-opacity">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-primary-foreground text-sm font-bold shrink-0 overflow-hidden ring-2 ring-background/60 shadow-sm hover:scale-105 active:scale-95 transition-all duration-200">
               {avatar ? (
                 <img
                   src={avatar}
@@ -139,54 +139,56 @@ export default function PostCard({
               )}
             </div>
           </Link>
-          <div className="w-0.5 flex-1 bg-border mt-2 mb-1 min-h-4" />
+          <div className="w-0.5 flex-1 bg-border/25 mt-3 mb-1 min-h-6 group-hover/post:bg-primary/20 transition-colors duration-300" />
         </div>
 
         {/* Konten */}
-        <div className="flex-1 pb-3">
-          <div className="flex items-center justify-between mb-1">
+        <div className="flex-1 pb-1">
+          <div className="flex items-center justify-between mb-1.5">
             <div className="flex items-center gap-2">
               <Link
                 to={`/user/${userId}`}
                 onClick={(e) => e.stopPropagation()}
-                className="font-semibold text-sm text-foreground hover:underline"
+                className="font-bold text-sm text-foreground hover:text-primary transition-colors hover:underline"
               >
                 {name}
               </Link>
               <Link
                 to={`/user/${userId}`}
                 onClick={(e) => e.stopPropagation()}
-                className="text-xs text-muted-foreground hover:underline"
+                className="text-xs text-muted-foreground/80 hover:text-foreground transition-colors"
               >
                 @{username}
               </Link>
             </div>
-            <span className="text-xs text-muted-foreground">{createdAt}</span>
+            <span className="text-xs text-muted-foreground/75 font-medium">{createdAt}</span>
           </div>
 
-          <p className="text-sm text-foreground leading-relaxed mb-3">
+          <p className="text-[14px] text-foreground/90 leading-relaxed mb-3 break-words">
             {content}
           </p>
           {image && (
-            <img
-              src={image}
-              alt="thread image"
-              className="w-full max-h-72 object-cover rounded-xl border border-border mb-3"
-              onClick={(e) => e.stopPropagation()}
-            />
+            <div className="overflow-hidden rounded-xl border border-border/40 shadow-sm max-h-80 w-full mb-4 bg-muted/20">
+              <img
+                src={image}
+                alt="thread image"
+                className="w-full h-full object-cover hover:scale-[1.01] transition-transform duration-500"
+                onClick={(e) => e.stopPropagation()}
+              />
+            </div>
           )}
           {/* Action buttons */}
-          <div className="flex items-center gap-1 -ml-2">
+          <div className="flex items-center gap-3 -ml-2">
             {/* Like */}
             <button
               onClick={handleLike}
-              className={`flex items-center gap-1.5 px-2 py-1.5 rounded-full text-xs transition-colors hover:bg-destructive/10 ${
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 hover:bg-destructive/10 ${
                 isLiked
-                  ? "text-red-500"
+                  ? "text-red-500 scale-[1.05]"
                   : "text-muted-foreground hover:text-red-500"
               }`}
             >
-              <Heart size={15} className={isLiked ? "fill-red-500" : ""} />
+              <Heart size={15} className={`transition-transform duration-200 active:scale-125 ${isLiked ? "fill-red-500 text-red-500 animate-pulse" : ""}`} />
               <span>{likeCount}</span>
             </button>
 
@@ -197,25 +199,26 @@ export default function PostCard({
                   e.stopPropagation();
                   setReplyOpen(true);
                 }}
-                className="flex items-center gap-1.5 px-2 py-1.5 rounded-full text-xs text-muted-foreground hover:text-secondary hover:bg-secondary/10 transition-colors"
+                className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold text-muted-foreground hover:text-secondary hover:bg-secondary/10 transition-all duration-200"
               >
-                <MessageCircle size={15} />
+                <MessageCircle size={15} className="active:rotate-12 transition-transform" />
                 <span>{replies}</span>
               </DialogTrigger>
 
               <DialogContent
-                className="sm:max-w-md"
+                className="sm:max-w-md border border-border/40 bg-card/95 backdrop-blur-md shadow-2xl"
                 onClick={(e) => e.stopPropagation()}
               >
                 <DialogHeader>
-                  <DialogTitle className="text-base">
-                    Reply to @{username}
+                  <DialogTitle className="text-base font-bold flex items-center gap-2">
+                    <span>Reply to</span>
+                    <span className="text-primary">@{username}</span>
                   </DialogTitle>
                 </DialogHeader>
 
                 {/* Preview thread yang di-reply */}
-                <div className="flex gap-3 p-3 rounded-xl bg-muted/40 border border-border">
-                  <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-xs font-bold shrink-0 overflow-hidden">
+                <div className="flex gap-3 p-3.5 rounded-xl bg-muted/40 border border-border/30 shadow-inner">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-primary-foreground text-xs font-bold shrink-0 overflow-hidden shadow-sm">
                     {avatar ? (
                       <img
                         src={avatar}
@@ -225,11 +228,11 @@ export default function PostCard({
                       name.charAt(0).toUpperCase()
                     )}
                   </div>
-                  <div>
-                    <p className="text-xs font-semibold text-foreground">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-bold text-foreground">
                       {name}
                     </p>
-                    <p className="text-xs text-muted-foreground line-clamp-2">
+                    <p className="text-xs text-muted-foreground/90 line-clamp-2 mt-0.5 break-words">
                       {content}
                     </p>
                   </div>
