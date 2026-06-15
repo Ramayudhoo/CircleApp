@@ -44,6 +44,7 @@ export default function ThreadDetail() {
   } = useCreateReply(threadId);
 
   const [replyOpen, setReplyOpen] = useState(false);
+  const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
 
   const handleReply = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -119,10 +120,16 @@ export default function ThreadDetail() {
                 </p>
 
                 {thread.image && (
-                  <div className="overflow-hidden rounded-xl border border-border/40 shadow-sm max-h-80 w-full mb-4 bg-muted/20">
+                  <div
+                    className="overflow-hidden rounded-2xl border border-border/40 shadow-md max-h-[450px] w-full mb-4 bg-black/10 backdrop-blur-xs flex items-center justify-center cursor-zoom-in group/image relative"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setPreviewImageUrl(thread.image);
+                    }}
+                  >
                     <img
                       src={thread.image}
-                      className="w-full h-full object-cover hover:scale-[1.01] transition-transform duration-500"
+                      className="max-h-[450px] w-full h-auto object-contain hover:scale-[1.015] transition-all duration-300"
                       alt="thread content"
                     />
                   </div>
@@ -338,12 +345,17 @@ export default function ThreadDetail() {
                               {reply.content}
                             </p>
                             {reply.image && (
-                              <div className="overflow-hidden rounded-xl border border-border/40 shadow-sm max-h-72 w-full mb-3 bg-muted/20">
+                              <div
+                                className="overflow-hidden rounded-2xl border border-border/40 shadow-md max-h-[350px] w-full mb-3 bg-black/10 backdrop-blur-xs flex items-center justify-center cursor-zoom-in group/image relative"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setPreviewImageUrl(reply.image!);
+                                }}
+                              >
                                 <img
                                   src={reply.image}
                                   alt="reply image"
-                                  className="w-full h-full object-cover hover:scale-[1.01] transition-transform duration-500"
-                                  onClick={(e) => e.stopPropagation()}
+                                  className="max-h-[350px] w-full h-auto object-contain hover:scale-[1.015] transition-all duration-300"
                                 />
                               </div>
                             )}
@@ -373,6 +385,21 @@ export default function ThreadDetail() {
             </>
           ) : null}
         </div>
+
+        <Dialog open={!!previewImageUrl} onOpenChange={(open) => !open && setPreviewImageUrl(null)}>
+          <DialogContent
+            className="max-w-[90vw] md:max-w-[80vw] max-h-[90vh] p-1 border-none bg-transparent shadow-none flex items-center justify-center overflow-hidden [&>button]:text-white [&>button]:bg-black/60 [&>button]:rounded-full [&>button]:p-1.5 [&>button]:hover:bg-black/80"
+            onClick={() => setPreviewImageUrl(null)}
+          >
+            {previewImageUrl && (
+              <img
+                src={previewImageUrl}
+                alt="preview image full"
+                className="max-w-full max-h-[85vh] object-contain rounded-xl shadow-2xl animate-fade-in"
+              />
+            )}
+          </DialogContent>
+        </Dialog>
       </main>
     </SidebarProvider>
   );

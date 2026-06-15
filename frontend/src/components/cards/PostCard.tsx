@@ -47,6 +47,7 @@ export default function PostCard({
   const [replyImagePreview, setReplyImagePreview] = useState<string | null>(
     null,
   );
+  const [imageOpen, setImageOpen] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -168,14 +169,34 @@ export default function PostCard({
             {content}
           </p>
           {image && (
-            <div className="overflow-hidden rounded-xl border border-border/40 shadow-sm max-h-80 w-full mb-4 bg-muted/20">
-              <img
-                src={image}
-                alt="thread image"
-                className="w-full h-full object-cover hover:scale-[1.01] transition-transform duration-500"
-                onClick={(e) => e.stopPropagation()}
-              />
-            </div>
+            <>
+              <div
+                className="overflow-hidden rounded-2xl border border-border/40 shadow-md max-h-[450px] w-full mb-4 bg-black/10 backdrop-blur-xs flex items-center justify-center cursor-zoom-in group/image relative"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setImageOpen(true);
+                }}
+              >
+                <img
+                  src={image}
+                  alt="thread image"
+                  className="max-h-[450px] w-full h-auto object-contain hover:scale-[1.015] transition-all duration-300"
+                />
+              </div>
+
+              <Dialog open={imageOpen} onOpenChange={setImageOpen}>
+                <DialogContent
+                  className="max-w-[90vw] md:max-w-[80vw] max-h-[90vh] p-1 border-none bg-transparent shadow-none flex items-center justify-center overflow-hidden [&>button]:text-white [&>button]:bg-black/60 [&>button]:rounded-full [&>button]:p-1.5 [&>button]:hover:bg-black/80"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <img
+                    src={image}
+                    alt="thread image full"
+                    className="max-w-full max-h-[85vh] object-contain rounded-xl shadow-2xl"
+                  />
+                </DialogContent>
+              </Dialog>
+            </>
           )}
           {/* Action buttons */}
           <div className="flex items-center gap-3 -ml-2">

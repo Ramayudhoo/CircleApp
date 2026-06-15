@@ -16,6 +16,7 @@ import {
 import { useUserThreads } from "@/hooks/useUserThreads";
 import { useEditProfile } from "@/hooks/useEditProfile";
 import FollowListModal from "@/components/FollowListModal";
+import { Camera, User, AtSign, FileText, Check, X } from "lucide-react";
 
 type TabType = "threads" | "replies";
 
@@ -100,34 +101,46 @@ export default function Profile() {
                 </div>
 
                 <Dialog open={editOpen} onOpenChange={setEditOpen}>
-                  <DialogTrigger className="rounded-full border border-border/60 text-foreground hover:bg-primary hover:text-primary-foreground hover:border-primary text-xs font-bold px-5 py-2 transition-all duration-200 shadow-xs cursor-pointer">
+                  <DialogTrigger className="rounded-full border border-border/60 text-foreground hover:bg-[var(--color-sakura)] hover:text-background hover:border-[var(--color-sakura)] text-xs font-bold px-5 py-2 transition-all duration-200 shadow-sm cursor-pointer">
                     Edit profile
                   </DialogTrigger>
 
-                  <DialogContent className="sm:max-w-lg border border-border/40 bg-card/95 backdrop-blur-md">
-                    <DialogHeader>
-                      <DialogTitle className="font-bold">Edit Profile</DialogTitle>
-                    </DialogHeader>
+                  <DialogContent className="sm:max-w-md border border-border/40 bg-card/95 backdrop-blur-xl p-0 overflow-hidden gap-0">
+                    {/* Modal header */}
+                    <div className="px-6 pt-6 pb-4 border-b border-border/30">
+                      <DialogHeader>
+                        <DialogTitle className="text-base font-bold tracking-tight">
+                          Edit Profile
+                        </DialogTitle>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          Update your public information
+                        </p>
+                      </DialogHeader>
+                    </div>
 
-                    <div className="space-y-4">
-                      {/* Avatar */}
+                    <div className="px-6 py-5 space-y-5">
+                      {/* ── Avatar picker ── */}
                       <div className="flex flex-col items-center gap-3">
-                        <div className="w-24 h-24 rounded-full overflow-hidden border border-border/60 shadow-sm relative group">
-                          {avatarPreview ? (
-                            <img
-                              src={avatarPreview}
-                              className="w-full h-full object-cover"
-                              alt="preview"
-                            />
-                          ) : (
-                            <div className="w-full h-full bg-primary flex items-center justify-center text-primary-foreground text-2xl font-bold">
-                              {name.charAt(0).toUpperCase()}
-                            </div>
-                          )}
-                        </div>
-
-                        <label className="cursor-pointer text-sm font-semibold text-primary hover:underline transition-colors">
-                          Change Photo
+                        <label className="cursor-pointer group relative">
+                          {/* avatar circle */}
+                          <div className="w-24 h-24 rounded-full overflow-hidden ring-2 ring-border/50 group-hover:ring-[var(--color-sakura)]/60 transition-all duration-300 shadow-md">
+                            {avatarPreview ? (
+                              <img
+                                src={avatarPreview}
+                                className="w-full h-full object-cover"
+                                alt="preview"
+                              />
+                            ) : (
+                              <div className="w-full h-full bg-gradient-to-br from-[var(--color-sakura)] to-[var(--color-neon-blue)] flex items-center justify-center text-white text-2xl font-bold">
+                                {name.charAt(0).toUpperCase() || <User size={28} />}
+                              </div>
+                            )}
+                          </div>
+                          {/* hover overlay */}
+                          <div className="absolute inset-0 rounded-full bg-black/40 flex flex-col items-center justify-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                            <Camera size={18} className="text-white" />
+                            <span className="text-white text-[10px] font-semibold">Change</span>
+                          </div>
                           <input
                             type="file"
                             accept="image/*"
@@ -141,49 +154,111 @@ export default function Profile() {
                             }}
                           />
                         </label>
+                        <p className="text-[11px] text-muted-foreground">
+                          Click avatar to change photo
+                        </p>
                       </div>
 
-                      {/* Name */}
-                      <div>
-                        <label className="text-sm font-semibold">Name</label>
-                        <input
-                          value={name}
-                          onChange={(e) => setName(e.target.value)}
-                          className="mt-1 w-full rounded-xl border border-border/60 bg-background/50 px-3 py-2 text-sm outline-none focus:border-primary transition-all"
-                        />
+                      {/* ── Name ── */}
+                      <div className="space-y-1.5">
+                        <label className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-widest">
+                          <User size={11} />
+                          Name
+                        </label>
+                        <div className="relative group">
+                          <input
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            placeholder="Your display name"
+                            className="
+                              w-full rounded-xl border border-border/60 bg-muted/40
+                              px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/50
+                              outline-none focus:border-[var(--color-sakura)]/70 focus:bg-muted/60
+                              transition-all duration-200
+                            "
+                          />
+                          <span className="absolute inset-0 rounded-xl ring-0 focus-within:ring-2 focus-within:ring-[var(--color-sakura)]/20 pointer-events-none transition-all duration-200" />
+                        </div>
                       </div>
 
-                      {/* Username */}
-                      <div>
-                        <label className="text-sm font-semibold">Username</label>
-                        <input
-                          value={username}
-                          onChange={(e) => setUsername(e.target.value)}
-                          className="mt-1 w-full rounded-xl border border-border/60 bg-background/50 px-3 py-2 text-sm outline-none focus:border-primary transition-all"
-                        />
+                      {/* ── Username ── */}
+                      <div className="space-y-1.5">
+                        <label className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-widest">
+                          <AtSign size={11} />
+                          Username
+                        </label>
+                        <div className="relative group flex items-center">
+                          <span className="absolute left-3.5 text-muted-foreground/60 text-sm select-none">
+                            @
+                          </span>
+                          <input
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
+                            placeholder="username"
+                            className="
+                              w-full rounded-xl border border-border/60 bg-muted/40
+                              pl-8 pr-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/50
+                              outline-none focus:border-[var(--color-sakura)]/70 focus:bg-muted/60
+                              transition-all duration-200
+                            "
+                          />
+                          <span className="absolute inset-0 rounded-xl ring-0 focus-within:ring-2 focus-within:ring-[var(--color-sakura)]/20 pointer-events-none transition-all duration-200" />
+                        </div>
                       </div>
 
-                      {/* Bio */}
-                      <div>
-                        <label className="text-sm font-semibold">Bio</label>
-                        <textarea
-                          value={bio}
-                          onChange={(e) => setBio(e.target.value)}
-                          rows={4}
-                          className="mt-1 w-full rounded-xl border border-border/60 bg-background/50 px-3 py-2 text-sm resize-none outline-none focus:border-primary transition-all"
-                        />
+                      {/* ── Bio ── */}
+                      <div className="space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <label className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-widest">
+                            <FileText size={11} />
+                            Bio
+                          </label>
+                          <span className={`text-[10px] tabular-nums transition-colors ${
+                            bio.length > 130 ? "text-destructive" : "text-muted-foreground/50"
+                          }`}>
+                            {bio.length}/150
+                          </span>
+                        </div>
+                        <div className="relative group">
+                          <textarea
+                            value={bio}
+                            onChange={(e) => setBio(e.target.value.slice(0, 150))}
+                            rows={3}
+                            placeholder="Write a short bio…"
+                            className="
+                              w-full rounded-xl border border-border/60 bg-muted/40
+                              px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/50
+                              resize-none outline-none focus:border-[var(--color-sakura)]/70 focus:bg-muted/60
+                              transition-all duration-200 leading-relaxed
+                            "
+                          />
+                          <span className="absolute inset-0 rounded-xl ring-0 focus-within:ring-2 focus-within:ring-[var(--color-sakura)]/20 pointer-events-none transition-all duration-200" />
+                        </div>
                       </div>
+                    </div>
 
-                      <div className="flex justify-end gap-2.5 pt-2">
-                        <Button
-                          variant="outline"
-                          onClick={() => setEditOpen(false)}
-                          className="rounded-full"
-                        >
-                          Cancel
-                        </Button>
-                        <Button onClick={onSave} className="rounded-full font-bold">Save</Button>
-                      </div>
+                    {/* ── Footer actions ── */}
+                    <div className="px-6 py-4 border-t border-border/30 flex justify-end gap-2.5 bg-muted/10">
+                      <Button
+                        variant="ghost"
+                        onClick={() => setEditOpen(false)}
+                        className="rounded-full h-9 px-5 text-xs font-semibold text-muted-foreground hover:text-foreground gap-1.5"
+                      >
+                        <X size={13} />
+                        Cancel
+                      </Button>
+                      <Button
+                        onClick={onSave}
+                        className="
+                          rounded-full h-9 px-6 text-xs font-bold gap-1.5
+                          bg-[var(--color-sakura)] hover:bg-[var(--color-sakura)]/85
+                          text-background shadow-md shadow-[var(--color-sakura)]/30
+                          transition-all duration-200
+                        "
+                      >
+                        <Check size={13} />
+                        Save Changes
+                      </Button>
                     </div>
                   </DialogContent>
                 </Dialog>
