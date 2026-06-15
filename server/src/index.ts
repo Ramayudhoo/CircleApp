@@ -5,6 +5,8 @@ import http from "http";
 import router from "./routes/index";
 import path from "path";
 import { Server } from "socket.io";
+import swaggerUi from "swagger-ui-express";
+import { swaggerDocument } from "./lib/swagger";
 dotenv.config();
 
 const app = express();
@@ -22,6 +24,7 @@ app.use(cors());
 app.use(express.json());
 
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.use("/api/v1", router);
 
 io.on("connection", (socket) => {

@@ -21,3 +21,8 @@ export const toggleLikeThread = async (threadId: number) => {
   const res = await api.post(`/threads/${threadId}/like`);
   return res.data;
 };
+
+export const fetchFollowingThreads = async (limit: number = 25) => {
+  const res = await api.get(`/threads/following?limit=${limit}`);
+  return res.data.data.threads;
+};

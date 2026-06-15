@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "../store";
 import PostCard from "../components/cards/PostCard";
@@ -9,12 +9,21 @@ import ProfileCard from "@/components/cards/ProfileCard";
 import SuggestCard from "@/components/cards/SuggestCard";
 import { useThreads } from "@/hooks/useThreads";
 import { useCreateThread } from "@/hooks/useCreateThreads";
-import { Image as ImageIcon, Sparkles } from "lucide-react";
+import { Image as ImageIcon } from "lucide-react";
 
 export default function Home() {
   const user = useSelector((state: RootState) => state.auth.user);
   const profile = useSelector((state: RootState) => state.profile);
-  const { threads, loading, error } = useThreads(user?.username);
+  const {
+    threads,
+    loading,
+    error,
+    followingThreads,
+    followingLoading,
+    followingError,
+    loadFollowingThreads,
+  } = useThreads(user?.username);
+
   const {
     content: newThread,
     setContent: setNewThread,
@@ -29,6 +38,13 @@ export default function Home() {
     "for-you",
   );
 
+  // fetch following threads saat tab dibuka
+  useEffect(() => {
+    if (activeTab === "following") {
+      loadFollowingThreads();
+    }
+  }, [activeTab]);
+
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -37,17 +53,15 @@ export default function Home() {
     }
   };
 
-  // Filter threads based on activeTab (or simulate it if all are mixed)
   const filteredThreads =
-    activeTab === "following"
-      ? threads.filter((t) => t.isLiked || t.replies > 0) // filter simulation for following
-      : threads;
+    activeTab === "following" ? followingThreads : threads;
+  const isLoading = activeTab === "following" ? followingLoading : loading;
+  const currentError = activeTab === "following" ? followingError : error;
 
   return (
     <SidebarProvider>
       <AppSidebar onNewThread={() => {}} />
       <main className="w-full min-h-screen bg-gradient-to-b from-background via-background/95 to-background/90 text-foreground relative overflow-hidden">
-        {/* Decorative subtle background glowing shapes */}
         <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] bg-primary/5 rounded-full blur-[120px] pointer-events-none" />
         <div className="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] bg-secondary/5 rounded-full blur-[140px] pointer-events-none" />
 
@@ -156,18 +170,20 @@ export default function Home() {
 
             {/* Thread list */}
             <div className="space-y-4">
-              {loading ? (
+              {isLoading ? (
                 <div className="flex justify-center py-12">
                   <div className="w-7 h-7 rounded-full border-[3px] border-muted border-t-primary animate-spin" />
                 </div>
-              ) : error ? (
+              ) : currentError ? (
                 <div className="p-4 rounded-xl border border-destructive/20 bg-destructive/10 text-destructive text-sm text-center">
-                  {error}
+                  {currentError}
                 </div>
               ) : filteredThreads.length === 0 ? (
                 <div className="text-center py-16 border border-dashed border-border/60 rounded-2xl bg-card/10">
                   <p className="text-muted-foreground text-sm font-medium">
-                    Belum ada thread untuk ditampilkan
+                    {activeTab === "following"
+                      ? "Belum ada thread dari yang kamu follow"
+                      : "Belum ada thread untuk ditampilkan"}
                   </p>
                 </div>
               ) : (

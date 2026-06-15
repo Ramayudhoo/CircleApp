@@ -42,10 +42,8 @@ type TabType = "threads" | "replies";
 
 export default function UserProfile() {
   const { id } = useParams<{ id: string }>();
-  console.log("User ID from URL:", id);
   const navigate = useNavigate();
   const userId = Number(id);
-  console.log("Parsed userId:", userId);
 
   const [profile, setProfile] = useState<UserProfileData | null>(null);
   const [threads, setThreads] = useState<Thread[]>([]);
@@ -253,7 +251,9 @@ export default function UserProfile() {
                   <span className="font-bold text-foreground group-hover:text-primary">
                     {profile.following_count}
                   </span>
-                  <span className="text-muted-foreground/80 ml-1">Following</span>
+                  <span className="text-muted-foreground/80 ml-1">
+                    Following
+                  </span>
                 </button>
                 <button
                   onClick={() => {
@@ -265,7 +265,9 @@ export default function UserProfile() {
                   <span className="font-bold text-foreground group-hover:text-primary">
                     {profile.follower_count}
                   </span>
-                  <span className="text-muted-foreground/80 ml-1">Followers</span>
+                  <span className="text-muted-foreground/80 ml-1">
+                    Followers
+                  </span>
                 </button>
               </div>
             </div>

@@ -141,7 +141,6 @@ export default function PostCard({
           </Link>
           <div className="w-0.5 flex-1 bg-border/25 mt-3 mb-1 min-h-6 group-hover/post:bg-primary/20 transition-colors duration-300" />
         </div>
-
         {/* Konten */}
         <div className="flex-1 pb-1">
           <div className="flex items-center justify-between mb-1.5">
@@ -167,17 +166,18 @@ export default function PostCard({
           <p className="text-[14px] text-foreground/90 leading-relaxed mb-3 break-words">
             {content}
           </p>
+
           {image && (
-            <div className="overflow-hidden rounded-xl border border-border/40 shadow-sm max-h-80 w-full mb-4 bg-muted/20">
+            <div className="overflow-hidden rounded-xl border border-border/40 shadow-sm mb-4 bg-muted/10 max-h-[500px] flex items-center justify-center">
               <img
                 src={image}
                 alt="thread image"
-                className="w-full h-full object-cover hover:scale-[1.01] transition-transform duration-500"
+                className="w-full max-h-[500px] object-contain hover:scale-[1.01] transition-transform duration-500"
                 onClick={(e) => e.stopPropagation()}
               />
             </div>
           )}
-          {/* Action buttons */}
+
           <div className="flex items-center gap-3 -ml-2">
             {/* Like */}
             <button

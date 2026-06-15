@@ -119,10 +119,10 @@ export default function ThreadDetail() {
                 </p>
 
                 {thread.image && (
-                  <div className="overflow-hidden rounded-xl border border-border/40 shadow-sm max-h-80 w-full mb-4 bg-muted/20">
+                  <div className="overflow-hidden rounded-xl border border-border/40 shadow-sm mb-4 bg-muted/10 max-h-[500px] flex items-center justify-center">
                     <img
                       src={thread.image}
-                      className="w-full h-full object-cover hover:scale-[1.01] transition-transform duration-500"
+                      className="w-full max-h-[500px] object-contain hover:scale-[1.01] transition-transform duration-500"
                       alt="thread content"
                     />
                   </div>

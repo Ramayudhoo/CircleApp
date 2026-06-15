@@ -2,8 +2,6 @@ import { Response } from "express";
 import { AuthRequest } from "../middleware/auth.middleware";
 import prisma from "../lib/prisma";
 import { io } from "../index";
-import { timeStamp } from "node:console";
-import { threadId } from "node:worker_threads";
 
 // ============ GET THREADS ============
 export const getThreads = async (req: AuthRequest, res: Response) => {
@@ -56,6 +54,71 @@ export const getThreads = async (req: AuthRequest, res: Response) => {
       code: 500,
       status: "error",
       message: "Gagal ambil data thread",
+    });
+  }
+};
+
+// ============ GET FOLLOWING THREADS ============
+export const getFollowingThreads = async (req: AuthRequest, res: Response) => {
+  try {
+    const limit = parseInt(req.query.limit as string) || 25;
+    const currentUserId = req.user?.user_id;
+
+    // ambil list id user yang di-follow oleh current user
+    const followingList = await prisma.following.findMany({
+      where: { follower_id: currentUserId! },
+      select: { following_id: true },
+    });
+    const followingIds = followingList.map((f) => f.following_id);
+
+    const threads = await prisma.threads.findMany({
+      where: {
+        created_by: { in: followingIds },
+      },
+      take: limit,
+      orderBy: { created_at: "desc" },
+      include: {
+        user: {
+          select: {
+            id: true,
+            username: true,
+            full_name: true,
+            photo_profile: true,
+          },
+        },
+        likes: true,
+        replies: true,
+      },
+    });
+
+    const data = threads.map((thread) => ({
+      id: thread.id,
+      content: thread.content,
+      image: thread.image,
+      created_at: thread.created_at,
+      user: {
+        id: thread.user.id,
+        username: thread.user.username,
+        name: thread.user.full_name,
+        profile_picture: thread.user.photo_profile,
+      },
+      likes: thread.likes.length,
+      reply: thread.replies.length,
+      isLiked: thread.likes.some((like) => like.user_id === currentUserId),
+    }));
+
+    return res.status(200).json({
+      code: 200,
+      status: "success",
+      message: "Get Following Threads Successfully",
+      data: { threads: data },
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      code: 500,
+      status: "error",
+      message: "Gagal ambil following threads",
     });
   }
 };

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { fetchThreads } from "@/services/threadServices";
+import { fetchThreads, fetchFollowingThreads } from "@/services/threadServices";
 import socket from "@/lib/socket";
 import { toast } from "sonner";
 
@@ -17,30 +17,35 @@ interface Thread {
   isLiked: boolean;
 }
 
+const mapThread = (t: any): Thread => ({
+  id: t.id,
+  userId: t.user.id,
+  username: t.user.username,
+  name: t.user.name,
+  avatar: t.user.profile_picture,
+  image: t.image,
+  content: t.content,
+  createdAt: new Date(t.created_at).toLocaleDateString("id-ID"),
+  likes: t.likes,
+  replies: t.reply,
+  isLiked: t.isLiked,
+});
+
 export const useThreads = (currentUsername?: string) => {
   const [threads, setThreads] = useState<Thread[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch awal
+  const [followingThreads, setFollowingThreads] = useState<Thread[]>([]);
+  const [followingLoading, setFollowingLoading] = useState(false);
+  const [followingError, setFollowingError] = useState<string | null>(null);
+
+  // Fetch awal — for you
   useEffect(() => {
     const load = async () => {
       try {
         const raw = await fetchThreads(25);
-        const mapped: Thread[] = raw.map((t: any) => ({
-          id: t.id,
-          userId: t.user.id,
-          username: t.user.username,
-          name: t.user.name,
-          avatar: t.user.profile_picture,
-          image: t.image,
-          content: t.content,
-          createdAt: new Date(t.created_at).toLocaleDateString("id-ID"),
-          likes: t.likes,
-          replies: t.reply,
-          isLiked: t.isLiked,
-        }));
-        setThreads(mapped);
+        setThreads(raw.map(mapThread));
       } catch (err) {
         setError("Gagal memuat thread");
       } finally {
@@ -50,23 +55,26 @@ export const useThreads = (currentUsername?: string) => {
     load();
   }, []);
 
+  // Fetch following threads — dipanggil manual saat tab dibuka
+  const loadFollowingThreads = async () => {
+    setFollowingLoading(true);
+    setFollowingError(null);
+    try {
+      const raw = await fetchFollowingThreads(25);
+      setFollowingThreads(raw.map(mapThread));
+    } catch (err) {
+      setFollowingError("Gagal memuat thread following");
+    } finally {
+      setFollowingLoading(false);
+    }
+  };
+
   // Listen socket new_thread
   useEffect(() => {
     const handler = (thread: any) => {
-      const mapped: Thread = {
-        id: thread.id,
-        userId: thread.user.id,
-        username: thread.user.username,
-        name: thread.user.name,
-        avatar: thread.user.profile_picture,
-        content: thread.content,
-        image: thread.image,
-        createdAt: new Date(thread.created_at).toLocaleDateString("id-ID"),
-        likes: thread.likes,
-        replies: thread.reply,
-        isLiked: thread.isLiked,
-      };
+      const mapped = mapThread(thread);
       setThreads((prev) => [mapped, ...prev]);
+
       if (thread.user.username !== currentUsername) {
         toast(`@${thread.user.username} posted a new thread`, {
           description:
@@ -84,5 +92,14 @@ export const useThreads = (currentUsername?: string) => {
     };
   }, [currentUsername]);
 
-  return { threads, loading, error, setThreads };
+  return {
+    threads,
+    loading,
+    error,
+    setThreads,
+    followingThreads,
+    followingLoading,
+    followingError,
+    loadFollowingThreads,
+  };
 };

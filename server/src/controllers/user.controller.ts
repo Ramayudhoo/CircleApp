@@ -113,6 +113,7 @@ export const getUserThreads = async (req: AuthRequest, res: Response) => {
   }
 };
 
+// Edit Profile
 export const updateProfile = async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.user?.user_id;
@@ -213,7 +214,7 @@ export const getUserProfile = async (req: AuthRequest, res: Response) => {
         avatar: user.photo_profile,
         follower_count: user._count.followers,
         following_count: user._count.following,
-        is_following: !!isFollowing, // ← penting untuk tombol follow/unfollow
+        is_following: !!isFollowing,
       },
     });
   } catch (error) {
@@ -258,7 +259,13 @@ export const searchUser = async (req: AuthRequest, res: Response) => {
     const usersWithStatus = await Promise.all(
       users.map(async (user) => {
         if (user.id === currentUserId) {
-          return { ...user, is_following: null }; // diri sendiri
+          return {
+            id: user.id,
+            username: user.username,
+            name: user.full_name || user.username,
+            avatar: user.photo_profile || "",
+            is_following: null,
+          };
         }
 
         const isFollowing = await prisma.following.findUnique({
