@@ -7,6 +7,7 @@ import Profile from "../pages/Profile";
 import { useAuth } from "../hooks/useAuth";
 import ThreadDetail from "@/pages/ThreadDetail";
 import UserProfile from "@/pages/UserProfile";
+import Activity from "@/pages/Activity";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
@@ -44,6 +45,14 @@ export default function Router() {
           element={
             <ProtectedRoute>
               <Search></Search>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/activity"
+          element={
+            <ProtectedRoute>
+              <Activity />
             </ProtectedRoute>
           }
         />

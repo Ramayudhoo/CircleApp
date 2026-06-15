@@ -1,22 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { getThreadDetail, toggleLikeThread } from "@/services/threadServices";
 import { getThreadReplies, toggleLikeReply } from "@/services/replyServices";
-
-interface ThreadData {
-  id: number;
-  content: string;
-  image?: string;
-  created_at: string;
-  user: {
-    id: number;
-    username: string;
-    name: string;
-    profile_picture?: string;
-  };
-  likes: number;
-  replies: number;
-  isLiked: boolean;
-}
+import { ThreadData } from "@/types/thread";
 
 interface ReplyData {
   id: number;
