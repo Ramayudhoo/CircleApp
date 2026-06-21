@@ -116,10 +116,12 @@ export const getUserThreads = async (req: AuthRequest, res: Response) => {
 export const updateProfile = async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.user?.user_id;
+    const BASE_URL =
+      process.env.SERVER_BASE_URL || `${req.protocol}://${req.get("host")}`;
 
     const { full_name, username, bio } = req.body;
     const photo_profile = req.file
-      ? `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`
+      ? `${BASE_URL}/uploads/${req.file.filename}`
       : undefined;
 
     const updatedUser = await prisma.users.update({
