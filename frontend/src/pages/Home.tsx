@@ -9,7 +9,7 @@ import ProfileCard from "@/components/cards/ProfileCard";
 import SuggestCard from "@/components/cards/SuggestCard";
 import { useThreads } from "@/hooks/useThreads";
 import { useCreateThread } from "@/hooks/useCreateThreads";
-import { Image as ImageIcon, Sparkles } from "lucide-react";
+import { Image as ImageIcon } from "lucide-react";
 
 export default function Home() {
   const user = useSelector((state: RootState) => state.auth.user);

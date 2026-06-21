@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { getSuggestedUsers } from "@/services/userServices";
 import { SuggestedUser } from "@/types/suggest";
-import { followUser, unfollowUser } from "@/services/followServices";
+import { followUser } from "@/services/followServices";
 import { toast } from "sonner";
 
 export const useSuggestedUsers = (limit: number = 5) => {

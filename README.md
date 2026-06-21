@@ -1,11 +1,16 @@
 ```
 CircleApp
-├─ README.md
 ├─ design.md
 ├─ frontend
 │  ├─ .prettierrc
-│  ├─ README.md
 │  ├─ components.json
+│  ├─ dist
+│  │  ├─ assets
+│  │  │  ├─ index-DbQDejRW.js
+│  │  │  └─ index-YAhpzlnw.css
+│  │  ├─ favicon.svg
+│  │  ├─ icons.svg
+│  │  └─ index.html
 │  ├─ eslint.config.js
 │  ├─ index.html
 │  ├─ package-lock.json
@@ -13,6 +18,7 @@ CircleApp
 │  ├─ public
 │  │  ├─ favicon.svg
 │  │  └─ icons.svg
+│  ├─ README.md
 │  ├─ src
 │  │  ├─ App.css
 │  │  ├─ App.tsx
@@ -25,11 +31,13 @@ CircleApp
 │  │  │  │  ├─ PostCard.tsx
 │  │  │  │  ├─ ProfileCard.tsx
 │  │  │  │  └─ SuggestCard.tsx
+│  │  │  ├─ FollowListModal.tsx
 │  │  │  ├─ layout
 │  │  │  │  └─ SideBar.tsx
 │  │  │  ├─ mode-togle.tsx
 │  │  │  ├─ theme-provider.tsx
 │  │  │  └─ ui
+│  │  │     ├─ avatar.tsx
 │  │  │     ├─ button.tsx
 │  │  │     ├─ card.tsx
 │  │  │     ├─ dialog.tsx
@@ -40,13 +48,23 @@ CircleApp
 │  │  │     ├─ sidebar.tsx
 │  │  │     ├─ skeleton.tsx
 │  │  │     ├─ sonner.tsx
+│  │  │     ├─ tabs.tsx
 │  │  │     └─ tooltip.tsx
 │  │  ├─ context
 │  │  │  ├─ AuthContext.tsx
 │  │  │  └─ AuthProvider.tsx
 │  │  ├─ hooks
 │  │  │  ├─ use-mobile.ts
-│  │  │  └─ useAuth.ts
+│  │  │  ├─ useAuth.ts
+│  │  │  ├─ useCreateReply.ts
+│  │  │  ├─ useCreateThreads.ts
+│  │  │  ├─ useEditProfile.ts
+│  │  │  ├─ useFollowList.ts
+│  │  │  ├─ useSearchUser.ts
+│  │  │  ├─ useSuggestUsers.ts
+│  │  │  ├─ useThreadDetail.ts
+│  │  │  ├─ useThreads.ts
+│  │  │  └─ useUserThreads.ts
 │  │  ├─ index.css
 │  │  ├─ lib
 │  │  │  ├─ axios.ts
@@ -54,23 +72,38 @@ CircleApp
 │  │  │  └─ utils.ts
 │  │  ├─ main.tsx
 │  │  ├─ pages
+│  │  │  ├─ Activity.tsx
 │  │  │  ├─ ForgotPass.tsx
 │  │  │  ├─ Home.tsx
 │  │  │  ├─ Login.tsx
 │  │  │  ├─ Profile.tsx
 │  │  │  ├─ Register.tsx
-│  │  │  └─ ThreadDetail.tsx
+│  │  │  ├─ Search.tsx
+│  │  │  ├─ ThreadDetail.tsx
+│  │  │  └─ UserProfile.tsx
 │  │  ├─ routes
 │  │  │  └─ index.tsx
-│  │  └─ store
-│  │     ├─ authSlice.ts
-│  │     ├─ index.ts
-│  │     ├─ likeSlice.ts
-│  │     └─ profileSlice.ts
+│  │  ├─ services
+│  │  │  ├─ followServices.ts
+│  │  │  ├─ replyServices.ts
+│  │  │  ├─ threadServices.ts
+│  │  │  └─ userServices.ts
+│  │  ├─ store
+│  │  │  ├─ authSlice.ts
+│  │  │  ├─ followSlice.ts
+│  │  │  ├─ hooks.ts
+│  │  │  ├─ index.ts
+│  │  │  ├─ likeSlice.ts
+│  │  │  └─ profileSlice.ts
+│  │  └─ types
+│  │     ├─ follow.ts
+│  │     ├─ suggest.ts
+│  │     └─ user.ts
 │  ├─ tsconfig.app.json
 │  ├─ tsconfig.json
 │  ├─ tsconfig.node.json
 │  └─ vite.config.ts
+├─ README.md
 └─ server
    ├─ .env
    ├─ package-lock.json
@@ -91,9 +124,11 @@ CircleApp
    │  ├─ schema.prisma
    │  └─ seed.ts
    ├─ prisma.config.ts
+   ├─ scratch_test.ts
    ├─ src
    │  ├─ controllers
    │  │  ├─ auth.controller.ts
+   │  │  ├─ follow.controller.ts
    │  │  ├─ thread.controller.ts
    │  │  └─ user.controller.ts
    │  ├─ index.ts
@@ -104,6 +139,7 @@ CircleApp
    │  │  └─ auth.middleware.ts
    │  ├─ routes
    │  │  ├─ auth.route.ts
+   │  │  ├─ follow.route.ts
    │  │  ├─ index.ts
    │  │  ├─ reply.route.ts
    │  │  ├─ thread.route.ts
@@ -120,7 +156,11 @@ CircleApp
    │     ├─ 2026-06-10_10-51-35_hidupjokowi.jpg
    │     ├─ 2026-06-10_11-03-42_hidupjokowi.jpg
    │     ├─ 2026-06-11_09-00-02_hidupjokowi.jpg
-   │     └─ 2026-06-11_10-40-18_memes.jpg
+   │     ├─ 2026-06-11_10-40-18_memes.jpg
+   │     ├─ 2026-06-13_19-08-24_tampan dan pemberani.jpeg
+   │     ├─ 2026-06-13_19-12-59_P1140979.jpg
+   │     ├─ 2026-06-13_19-14-06_057d5e3f-996e-4ada-af68-99fa8aee1559.jpeg
+   │     └─ 2026-06-13_19-25-27_gundar.png
    └─ tsconfig.json
 
 ```
