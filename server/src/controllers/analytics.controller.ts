@@ -2,24 +2,29 @@ import type { Response } from "express";
 import { AuthRequest } from "../middleware/auth.middleware";
 import prisma from "../lib/prisma";
 
+// ENDPOINT: Ringkasan total followers, threads, likes, dan replies
 export async function getSummary(req: AuthRequest, res: Response) {
   try {
     const userId = req.user?.user_id;
 
+    // Hitung pengikut yang mengikuti user ini
     const totalFollowers = await prisma.following.count({
       where: { following_id: userId! },
     });
 
+    // Hitung total postingan buatan user
     const totalThreads = await prisma.threads.count({
       where: { created_by: userId! },
     });
 
+    // Hitung total likes dari seluruh postingan user
     const totalLikes = await prisma.likes.count({
       where: {
         thread: { created_by: userId! },
       },
     });
 
+    // Hitung total komentar/replies dari seluruh postingan user
     const totalReplies = await prisma.replies.count({
       where: {
         thread: { created_by: userId! },
@@ -43,6 +48,7 @@ export async function getSummary(req: AuthRequest, res: Response) {
   }
 }
 
+// 2. ENDPOINT: Mengambil postingan terpopuler berdasarkan skor interaksi
 export async function getTopThreads(req: AuthRequest, res: Response) {
   try {
     const userId = req.user!.user_id;
@@ -50,6 +56,7 @@ export async function getTopThreads(req: AuthRequest, res: Response) {
     const cursor = req.query.cursor as string | undefined;
     const days = req.query.days ? Number(req.query.days) : undefined;
 
+    // Filter rentang waktu jika ada parameter 'days' (misal: 7 hari terakhir)
     const dateFilter = days
       ? {
           created_at: {
@@ -58,6 +65,7 @@ export async function getTopThreads(req: AuthRequest, res: Response) {
         }
       : {};
 
+    // Ambil thread milik user berserta jumlah likes & replies
     const threads = await prisma.threads.findMany({
       where: { created_by: userId, ...dateFilter },
       select: {
@@ -71,6 +79,7 @@ export async function getTopThreads(req: AuthRequest, res: Response) {
       },
     });
 
+    // Hitung score (likes + replies) & urutkan dari skor tertinggi
     const sorted = threads
       .map((t) => ({
         id: t.id,
@@ -83,9 +92,10 @@ export async function getTopThreads(req: AuthRequest, res: Response) {
       }))
       .sort((a, b) => {
         if (b.score !== a.score) return b.score - a.score;
-        return b.id - a.id;
+        return b.id - a.id; // jika skor sama, urutkan berdasarkan ID thread
       });
 
+    // Potong data berdasarkan cursor pagination
     let startIndex = 0;
     if (cursor) {
       const [cursorScoreStr, cursorIdStr] = cursor.split("_");
@@ -116,6 +126,7 @@ export async function getTopThreads(req: AuthRequest, res: Response) {
   }
 }
 
+// 3. ENDPOINT: Riwayat interaksi terbaru (Likes, Replies, & Followers baru)
 export async function getActivity(req: AuthRequest, res: Response) {
   try {
     const userId = req.user!.user_id;
@@ -125,7 +136,9 @@ export async function getActivity(req: AuthRequest, res: Response) {
 
     const dateFilter = cursorDate ? { created_at: { lt: cursorDate } } : {};
 
+    // Kueri paralel untuk mengambil 3 jenis aktivitas berbeda dari database
     const [recentLikes, recentReplies, recentFollows] = await Promise.all([
+      // Ambil aktivitas like dari orang lain
       prisma.likes.findMany({
         where: {
           thread: { created_by: userId },
@@ -142,6 +155,7 @@ export async function getActivity(req: AuthRequest, res: Response) {
         take: limit,
       }),
 
+      // Ambil aktivitas reply/komentar dari orang lain
       prisma.replies.findMany({
         where: {
           thread: { created_by: userId },
@@ -158,6 +172,7 @@ export async function getActivity(req: AuthRequest, res: Response) {
         take: limit,
       }),
 
+      // Ambil aktivitas followers baru
       prisma.following.findMany({
         where: {
           following_id: userId,
@@ -173,6 +188,7 @@ export async function getActivity(req: AuthRequest, res: Response) {
       }),
     ]);
 
+    // Gabungkan ketiga aktivitas ke dalam satu list & urutkan dari yang terbaru
     const merged = [
       ...recentLikes.map((l) => ({
         id: `like-${l.id}`,
@@ -197,6 +213,7 @@ export async function getActivity(req: AuthRequest, res: Response) {
       })),
     ].sort((a, b) => b.created_at.getTime() - a.created_at.getTime());
 
+    // Kembalikan data sesuai limit & buat cursor baru berupa timestamp tanggal
     const page = merged.slice(0, limit);
     const lastItem = page[page.length - 1];
     const nextCursor = lastItem ? lastItem.created_at.toISOString() : null;

@@ -227,6 +227,7 @@ export const getUserProfile = async (req: AuthRequest, res: Response) => {
     });
   }
 };
+
 export const searchUser = async (req: AuthRequest, res: Response) => {
   try {
     const query = req.query.q as string;
