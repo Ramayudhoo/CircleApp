@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { ModeToggle } from "@/components/mode-togle";
-import { User, Mail, Lock, Sparkles, ArrowRight, Eye, EyeOff } from "lucide-react";
+import { User, Mail, Lock, ArrowRight, Eye, EyeOff } from "lucide-react";
 
 export default function Register() {
   const { register } = useAuth();
