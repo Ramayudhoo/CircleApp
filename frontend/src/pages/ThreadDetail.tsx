@@ -124,7 +124,7 @@ export default function ThreadDetail() {
                     className="overflow-hidden rounded-2xl border border-border/40 shadow-md max-h-[450px] w-full mb-4 bg-black/10 backdrop-blur-xs flex items-center justify-center cursor-zoom-in group/image relative"
                     onClick={(e) => {
                       e.stopPropagation();
-                      setPreviewImageUrl(thread.image);
+                      setPreviewImageUrl(thread.image ?? null);
                     }}
                   >
                     <img
