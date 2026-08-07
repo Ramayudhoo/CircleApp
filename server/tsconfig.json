@@ -34,6 +34,7 @@
 
     // Recommended Options
     "strict": true,
+    "noImplicitAny": false,
     "jsx": "react-jsx",
     "verbatimModuleSyntax": false,
     "isolatedModules": true,
@@ -41,5 +42,6 @@
     "moduleDetection": "force",
     "skipLibCheck": true
   },
-  "exclude": ["prisma.config.ts", "node_modules", "dist"]
+  "include": ["src/**/*"],
+  "exclude": ["prisma.config.ts", "node_modules", "dist", "prisma", "scratch_test.ts"]
 }
