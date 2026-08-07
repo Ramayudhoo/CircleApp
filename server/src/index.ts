@@ -16,7 +16,10 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:5173",
+    origin: [
+      "http://localhost:5173",
+      "https://divine-adaptation-production-26c5.up.railway.app",
+    ],
     methods: ["GET", "POST"],
   },
 });
